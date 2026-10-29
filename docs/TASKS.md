@@ -403,3 +403,14 @@ including additive contract changes in API_CONTRACT §7. This task covers the ne
 Dev 1 catalog/registration/persistence, Dev 2 match/group integration and Dev 3 UI changes.
 No new dependencies; preserve other developers' existing edits. Unimplemented unrelated
 invite/connect/cards/admin features are not expanded by this task.
+
+## HACK-309 — Animated landing and English/Deutsch (2026-10-29)
+
+User-approved frontend extension: centered animated headlines/table, pause and
+reduced-motion support; shared typed English/German dictionaries, persisted locale
+selector on every page, localized catalogs/dates/known errors and reactive page
+content without resetting form/session state. Integration includes existing game,
+Connect and Admin strings; underlying behavior and the API contract stay intact.
+Verification: frontend lint, Vitest and build; locale priority/key parity/date tests;
+headline timer pause/resume/cleanup tests; mobile/desktop browser checks in both
+languages, including form-state preservation.

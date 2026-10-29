@@ -24,7 +24,7 @@ International students at THWS struggle to build local friendships, while German
 - **Low friction:** mobile-first, chips instead of text fields, one screen form.
 - **Reliable matching:** deterministic, validator re-checks every group, automated tests on hard constraints.
 - **Privacy/human interaction:** no rankings/public profiles; one-sided requests invisible to recipient; "no" never revealed.
-- **A11y & i18n:** English-first; all UI strings in `frontend/src/i18n/en.ts`; backend sends IDs not labels; WCAG AA contrast, ≥44px touch targets, labelled inputs.
+- **A11y & i18n:** English/Deutsch; typed UI dictionaries in `frontend/src/i18n/{en,de}.ts`; backend sends IDs not labels; WCAG AA contrast, ≥44px touch targets, labelled inputs.
 
 ### A.3 Ambiguities & how we resolved them
 | Ambiguity | Decision |
@@ -81,3 +81,15 @@ Prototype is **not** production-compliant. Before real use: replace bearer-token
 
 ## Success metrics
 Registration balance D:I, registration → match conversion, attendance (future: one-tap "We met" check-in), repeat participation, mutual connections per group, share of registrations arriving via friend invites (proves the "bring a friend" thesis for German students).
+
+## Animated landing and bilingual interface (HACK-309, 2026-10-29)
+
+The centered landing cycles three paired headlines every four seconds and rotates its
+four-person table once every 24 seconds. A pause control, reduced-motion preference
+and hidden-tab suspension stop motion without moving the CTA.
+All frontend screens, including Play Together, Connect and Admin, support English
+and Deutsch. The saved UI preference takes priority over the browser's primary
+language (German selects Deutsch; otherwise English). Changing language preserves
+registration answers, the current step, loaded data and the session. Conversation
+questions remain in the group's shared language; names, addresses and supplied
+contact text are never translated. Existing matching and API behavior is unchanged.

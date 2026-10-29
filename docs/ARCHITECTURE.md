@@ -134,3 +134,16 @@ validates campus/Mensa/slots and persists `mensaId`; missing legacy values resol
 MatchService checks friend compatibility before partitioning candidates by Mensa, then invokes the
 unchanged pure MatchingEngine per partition and validates every proposal before saving groups.
 Existing group location strings remain intact; new groups store the catalog name and address.
+
+## Frontend locale and landing motion (HACK-309, 2026-10-29)
+
+`frontend/src/i18n/index.ts` owns the locale and exposes a `useSyncExternalStore`
+subscription through `useI18n`. Typed `en.ts`/`de.ts` dictionaries require matching
+keys; existing page/game string modules delegate to this shared dictionary.
+`presentation.ts` maps catalog IDs, known error/reason codes, dates and existing
+group explanation templates to localized display values. Locale updates preserve
+component identity and form state, set HTML `lang`, and persist `lunch2.locale`.
+`useLandingMotion` coordinates the four-second headline cycle with pause, visibility
+and reduced-motion state; the table uses a 24-second CSS rotation with counter-
+rotating faces. Timers and listeners are cleaned up on unmount. No new dependencies
+or backend changes are needed.

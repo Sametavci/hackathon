@@ -1,13 +1,14 @@
 import { useMemo, useRef, useState } from 'react';
 import { getCards } from '../api/endpoints';
 import { useResource } from '../hooks/useResource';
-import { t } from './games/gameStrings';
+import { useI18n } from '../i18n';
 import { buildIcebreakerDeck, shuffleDeck } from './games/icebreakerDeck';
 import type { CardsResponse } from '../api/types';
 import Button from './Button';
 import ErrorBanner from './ErrorBanner';
 import LoadState from './LoadState';
 export default function ConversationCards({ groupId }: { groupId: string }) {
+  const { t } = useI18n();
   const cards = useResource(`cards-${groupId}`, () => getCards(groupId));
   const [index, setIndex] = useState(0);
   const [finished, setFinished] = useState(false);
