@@ -24,7 +24,22 @@ it('encodes dynamic path segments', async () => {
   const fetcher = vi.fn().mockResolvedValue(new Response('{}')); vi.stubGlobal('fetch', fetcher);
   await api.getInvite('a/b?x'); expect(fetcher.mock.calls[0][0]).toBe('/api/invites/a%2Fb%3Fx');
 });
-it('blocks reset without sending an undefined-contract mutation', async () => {
+it('resets with the admin key, no participant credentials and an empty 204 response', async () => {
+  localStorage.setItem('lunch2.token', 'participant-token');
+  const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetcher);
+  await expect(api.resetDemo('admin-secret')).resolves.toBeUndefined();
+  const [path, options] = fetcher.mock.calls[0];
+  expect(path).toBe('/api/admin/reset'); expect(options.method).toBe('POST');
+  expect(options.headers.get('X-Admin-Key')).toBe('admin-secret');
+  expect(options.headers.has('Authorization')).toBe(false); expect(options.body).toBeUndefined();
+});
+it('returns reset authorization failures instead of treating them as success', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Invalid key.' } }), { status: 401 })));
+  await expect(api.resetDemo('wrong')).rejects.toMatchObject({ status: 401, code: 'UNAUTHORIZED' });
+});
+it('routes reset through the mock API when mocks are enabled', async () => {
+  vi.stubEnv('VITE_USE_MOCKS', 'true');
   const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher);
-  await expect(api.resetDemo()).rejects.toMatchObject({ code: 'CONTRACT_PENDING' }); expect(fetcher).not.toHaveBeenCalled();
+  await expect(api.resetDemo('dev-admin-key')).resolves.toBeUndefined();
+  expect(fetcher).not.toHaveBeenCalled();
 });

@@ -1,6 +1,5 @@
-import { ApiError, request, type RequestOptions } from './client';
+import { request, type RequestOptions } from './client';
 import { mockRequest } from './mocks';
-import { t } from '../i18n/en';
 import type { CardsResponse, ConnectionItem, ConnectChoice, GroupResponse, InvitePreview, InviteResponse, MatchRunResponse, MeResponse, MetaResponse, RegistrationRequest, RegistrationResponse, SeedResponse, StatsResponse } from './types';
 const call = <T>(path: string, options?: RequestOptions): Promise<T> => import.meta.env.VITE_USE_MOCKS === 'true' ? mockRequest<T>(path, options) : request<T>(path, options);
 const participant = { auth: 'participant' } as const;
@@ -22,6 +21,4 @@ export const withdrawContact = (groupId: string, id: string) => call<ConnectionI
 export const seedDemo = (adminKey: string) => call<SeedResponse>('/admin/seed', { auth: 'admin', adminKey, method: 'POST' });
 export const runMatch = (adminKey: string) => call<MatchRunResponse>('/admin/match', { auth: 'admin', adminKey, method: 'POST' });
 export const getStats = (adminKey: string) => call<StatsResponse>('/admin/stats', { auth: 'admin', adminKey });
-// A3's success status/body is missing from the frozen contract. No network mutation
-// until Dev 1 specifies it. Keep the public entry point for the second integration pass.
-export const resetDemo = (): Promise<never> => Promise.reject(new ApiError(0, 'CONTRACT_PENDING', t('admin.resetPending')));
+export const resetDemo = (adminKey: string) => call<void>('/admin/reset', { auth: 'admin', adminKey, method: 'POST' });

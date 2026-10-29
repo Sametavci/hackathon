@@ -108,12 +108,17 @@ export async function mockRequest<T>(path: string, options: RequestOptions = {})
   const state = load();
   const method = options.method ?? 'GET';
   let id = '';
+  if (path === '/admin/reset' && options.auth !== 'admin') fail(401, 'UNAUTHORIZED', 'The admin key is required.');
   if (options.auth === 'admin' && options.adminKey !== 'dev-admin-key') fail(401, 'UNAUTHORIZED', 'The admin key is invalid.');
   if (options.auth === 'participant') {
     id = state.tokens[getToken() ?? ''] ?? '';
     if (!state.participants[id]) { clearSession(); fail(401, 'UNAUTHORIZED', 'Your session has expired. Please register or use your saved return link.'); }
   }
   let output: unknown;
+  if (path === '/admin/reset' && method === 'POST') {
+    save(emptyState());
+    return undefined as T;
+  }
   if (path === '/meta') output = mockMeta;
   else if (path === '/participants' && method === 'POST') output = register(state, options.body as RegistrationRequest);
   else if (path === '/me' && method === 'GET') output = me(state, id);
