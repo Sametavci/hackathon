@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import classics from '../../../../backend/src/main/resources/cards/icebreakers.en.json';
 import type { CardsResponse } from '../../api/types';
-import { buildIcebreakerDeck, shuffleDeck } from './icebreakerDeck';
+import { buildIcebreakerDeck, interestFirstDeck, shuffleDeck } from './icebreakerDeck';
 
 const response: CardsResponse = {
   groupId: 'group', language: 'en', source: 'AI',
@@ -43,5 +43,14 @@ describe('prototype icebreaker deck', () => {
     expect(shuffleDeck([1, 2, 3], () => 0.999)).not.toEqual([1, 2, 3]);
     expect(shuffleDeck([])).toEqual([]);
     expect(shuffleDeck([1])).toEqual([1]);
+  });
+
+  it('puts the interest-based server questions before the classics', () => {
+    const ai: CardsResponse = { ...response, cards: [
+      { id: 'c1', text: 'Best trip so far?', topic: 'travel' }, { id: 'c2', text: 'Favourite co-op game?', topic: 'gaming' }] };
+    const deck = interestFirstDeck(ai, () => 0.5);
+    expect(new Set(deck.slice(0, 2).map(card => card.id))).toEqual(new Set(['c1', 'c2']));
+    expect(deck.slice(2).map(card => card.text)).toEqual(expect.arrayContaining(classics));
+    expect(deck).toHaveLength(12);
   });
 });
