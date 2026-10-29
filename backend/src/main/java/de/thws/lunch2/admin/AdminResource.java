@@ -31,7 +31,6 @@ public class AdminResource {
     @Path("/reset")
     public Response reset() {
         matching.reset();
-        // Provisional A3 response agreed with the user; recheck the contract in the next ticket.
         return Response.noContent().build();
     }
 }
