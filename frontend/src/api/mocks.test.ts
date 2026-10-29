@@ -3,7 +3,8 @@ import { mockRequest } from './mocks';
 import { mockMeta } from './mockData';
 import { getToken, setToken } from './session';
 import { memoryStorage } from './testStorage';
-import type { ConnectionItem, GroupResponse, InvitePreview, InviteResponse, MatchRunResponse, MeResponse, RegistrationRequest, RegistrationResponse, SeedResponse, StatsResponse } from './types';
+import type { CardsResponse, ConnectionItem, GroupResponse, InvitePreview, InviteResponse, MatchRunResponse, MeResponse, RegistrationRequest, RegistrationResponse, SeedResponse, StatsResponse } from './types';
+import classics from '../../../backend/src/main/resources/cards/icebreakers.en.json';
 const auth = { auth: 'participant' } as const;
 const admin = { auth: 'admin', adminKey: 'dev-admin-key', method: 'POST' } as const;
 function signup(name: string, changes: Partial<RegistrationRequest> = {}) {
@@ -20,6 +21,31 @@ beforeEach(() => { vi.stubGlobal('localStorage', memoryStorage()); vi.stubGlobal
 afterEach(() => vi.unstubAllGlobals());
 
 describe('stateful demo API', () => {
+  it('serves five stable classic cards and blocks non-members', async () => {
+    const { group } = await lunch();
+    const first = await mockRequest<CardsResponse>(`/groups/${group}/cards`, auth);
+    expect(first.cards).toHaveLength(5);
+    expect(first.cards.every(card => classics.includes(card.text))).toBe(true);
+    expect(await mockRequest(`/groups/${group}/cards`, auth)).toEqual(first);
+    const outsider = await signup('Outside');
+    setToken(outsider.accessToken);
+    await expect(mockRequest(`/groups/${group}/cards`, auth)).rejects.toMatchObject({ status: 403 });
+  });
+
+  it('keeps non-English mock cards in the shared language', async () => {
+    const first = await signup('First', { languages: ['tr'] });
+    for (const [index, category] of (['DOMESTIC', 'INTERNATIONAL', 'INTERNATIONAL'] as const).entries()) {
+      await signup(`Person ${index}`, { category, languages: ['tr'] });
+    }
+    const result = await mockRequest<MatchRunResponse>('/admin/match', admin);
+    expect(result.groupsCreated).toHaveLength(1);
+    setToken(first.accessToken);
+    const cards = await mockRequest<CardsResponse>(`/groups/${result.groupsCreated[0].groupId}/cards`, auth);
+    expect(cards.language).toBe('tr');
+    expect(cards.cards).toHaveLength(5);
+    expect(cards.cards.every(card => !classics.includes(card.text))).toBe(true);
+    expect(cards.cards[0].text).toBe('Kampüste bir günü senin için daha keyifli yapan nedir?');
+  });
   it('registers, restores a token, matches 2+2 once, and returns member-safe group fields', async () => {
     const { a, group } = await lunch();
     expect(a.restoreUrl).toBe(`https://lunch.test/#/back?t=${a.accessToken}`); expect(a.accessToken).toMatch(/^[\w-]{43}$/);

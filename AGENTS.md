@@ -41,6 +41,11 @@ Tests live next to the code owner's package (`backend/src/test/java/de/thws/lunc
 - **Tests:** every endpoint ticket adds RestAssured `@QuarkusTest`s for its acceptance criteria; matching has plain JUnit tests; frontend logic (client, mocks) gets Vitest tests.
 
 ## AI agent rules
+0. Keep new features prototype-sized unless the user requests more. For every feature
+   change, update the relevant SPEC, ARCHITECTURE, API_CONTRACT, TASKS and README sections
+   in the same branch so subsequent work follows the implemented behavior. HACK-111's
+   scoped games/card/frontend extension is authorized in TASKS.md; unrelated ownership
+   and contract restrictions remain in force.
 1. Read the ticket in `docs/TASKS.md` and the contract sections it references first.
 2. Follow the contracts and architecture; never rename/remove a field, endpoint, enum or config key. Missing or wrong contract → stop and report.
 3. Touch only files needed for the current ticket and owned by your developer. No unrelated refactors, no reformatting of others' code.

@@ -232,6 +232,13 @@ Pair → `UNLINKED`; both are matched individually from the next round.
 ```
 5 cards. First call generates (AI with 8 s timeout, else fallback) and **persists in the group**; later calls return the cache. Never 5xx for AI failure — return `source: "FALLBACK"`.
 
+Play Together prototype (§8): this endpoint still returns exactly five cached cards with
+the same DTO and auth rules. Its English fallback generic pool uses the ten supplied
+classic questions in `resources/cards/icebreakers.en.json`. The browser combines these
+classics with English `/cards` results for the local game; the displayed deck can therefore
+contain more than five questions. `source: AI` describes the server set, and the game labels
+the combined deck "AI + classic questions". Old cached sets are returned unchanged.
+
 ### E10 `GET /api/groups/{groupId}/connections` → 200 `ConnectionItem[]` (other 3 members only)
 
 ```json
@@ -410,6 +417,8 @@ Frontend env (`frontend/.env.development`): `VITE_USE_MOCKS=true|false` (default
 | `#/me` | `pages/MePage.tsx` (Dev 3) | Status, invite, unlink, delete data |
 | `#/group/:groupId` | `pages/GroupPage.tsx` (Dev 3) | Reveal + cards |
 | `#/group/:groupId/connect` | `pages/ConnectPage.tsx` (**Dev 1**) | Mutual connect |
+| `#/group/:groupId/play` | `pages/PlayPage.tsx` (Dev 3, HACK-111 coordinated scope) | Member-only prototype games hub |
+| `#/group/:groupId/play/:gameId` | `pages/PlayPage.tsx` (Dev 3, HACK-111 coordinated scope) | Local game; initially `icebreakers` only |
 | `#/privacy` | `pages/PrivacyPage.tsx` (Dev 3) | Privacy notice |
 | `#/admin` | `pages/AdminPage.tsx` (Dev 2, optional) | Seed / match / reset buttons |
 
@@ -452,3 +461,20 @@ This additive extension is authorized by the approved registration/theme plan. I
 Sources: [Würzburg listing](https://www.swerk-wue.de/wuerzburg/essen-trinken/mensen-speiseplaene),
 [Studentenhaus (Friday exception)](https://www.swerk-wue.de/wuerzburg/essen-trinken/mensen-speiseplaene/mensa-am-studentenhaus-wuerzburg),
 [Schweinfurt service hours](https://www.swerk-wue.de/schweinfurt/essen-trinken/mensen-speiseplaene/mensa-thws-campus-schweinfurt/menu).
+
+## 8. Play Together prototype — user-approved HACK-111 scope (2026-10-29)
+
+- Access requires a valid participant token and membership of the selected group.
+  Existing E8/E9 enforce this; matching is enough. There is no attendance/time gate.
+- Routes are `#/group/:groupId/play` and `#/group/:groupId/play/icebreakers`.
+  The `would-you-rather` and `common-ground` catalog entries are coming soon; direct
+  links to them or unknown games show an unavailable message, without fetching cards.
+- No new endpoint, config key, enum, DTO field, provider payload or persisted schema.
+  E9 remains exactly five cards, cached per group; AI failures still return fallback.
+- The English game deck is the deduplicated union of E9 cards and the ten supplied
+  classic questions. Other languages retain their E9 deck. Both mocks and backend
+  fallback resources share the source JSON. The UI uses `AI + classic questions`
+  for an AI-sourced combined deck and `Classic` for a fallback deck.
+- Previous/next/skip/shuffle/finish/replay are local display actions. They never send
+  answers, advance other phones, modify the cached server set or regenerate content.
+- Additional games with backend state are future contract work, not part of this prototype.

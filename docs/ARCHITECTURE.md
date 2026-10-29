@@ -1,5 +1,29 @@
 # Lunch² – Architecture
 
+## Play Together prototype extension (HACK-111, 2026-10-29)
+
+GroupPage links to PlayPage at `#/group/:groupId/play`; the existing member-only
+`getGroup` endpoint gates both the catalog and direct game links. Matching membership
+is sufficient: no schedule check, attendance verification, check-in or levels.
+`components/games/gameCatalog.ts` registers metadata and a renderer per game. Only
+Conversation Shuffle (`icebreakers`) has a renderer; future games are disabled and
+clearly marked coming soon. Add a component and catalog entry to extend this local model.
+
+Opening the hub does not fetch or generate questions. Starting Icebreakers mounts
+ConversationCards, which calls only the existing `getCards` endpoint. The wire deck
+remains five cached questions. The frontend adds the ten shared classics for `en`,
+deduplicates and shuffles copies locally; other languages keep their translated server
+deck. Skip, shuffle, replay and finishing make no additional AI requests. Each phone
+has its own order/progress, reset on leaving/reloading; there is no shared game session,
+polling, scoring, answer text or audio storage.
+
+The English bank lives in `backend/src/main/resources/cards/icebreakers.en.json`.
+Existing non-English generic fallback questions live in `generic-translations.json`.
+IcebreakerQuestions loads these immutable resources for FallbackCards; frontend mocks
+import the same JSON. Existing generated sets, cache locking, timeout and provider
+privacy rules are unchanged. HACK-111's narrow coordinated ownership scope is recorded
+in TASKS.md; no general module-ownership transfer is implied.
+
 > Rules for module boundaries live here; endpoint and DTO details live in `API_CONTRACT.md`.
 
 ## 0. Assumptions (stated, not asked)
