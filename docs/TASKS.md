@@ -1,5 +1,25 @@
 # Lunch² – Tasks, Ownership & Schedule
 
+## HACK-111 — Play Together prototype (user-requested extension, 2026-10-29)
+
+The user requested implementation of a post-match games hub and an icebreaker game,
+including the ten supplied classic English questions alongside LLM suggestions, and
+updated Markdown documentation. This narrow coordinated scope covers the required
+Dev 2 cards/resource/tests and Dev 3 group page, router, game UI, mocks/tests; preserve
+their existing work. It does not transfer ownership of unrelated files or features.
+
+Acceptance: group members can open `#/group/:groupId/play` and choose Icebreakers;
+non-members remain blocked by the existing API. The game combines cached `/cards`
+questions with the shared classic bank for English groups, deduplicates and shuffles
+locally, and supports previous/next/skip/shuffle/replay without regenerating AI content.
+The other two catalog entries are clearly marked coming soon and cannot be started.
+There is no attendance/time gate, XP, scoreboard, answer recording, shared game session,
+polling, new dependency, new endpoint or changed wire DTO. Non-English groups retain
+their shared-language deck. Old cached card sets stay intact.
+
+Verify: Maven verify; frontend build, lint and Vitest; mobile browser checks at 375px
+against mock and real APIs. Update SPEC, ARCHITECTURE, API_CONTRACT and README.
+
 > Each developer: find your queue in §F.1, then your ticket details in §E.1. Rules: `/AGENTS.md`.
 
 ## E. Complete Ticket Backlog

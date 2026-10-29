@@ -15,7 +15,7 @@ International students at THWS struggle to build local friendships, while German
 | F2 | Bring a Friend | Share URL, friend registers via link, pair linked, kept together, explained when impossible |
 | F3 | 2+2 matching | Groups of exactly 4, 2 domestic + 2 international, same campus, common slot, common language, no double assignment, friends together; unmatched users wait with a reason |
 | F4 | Group reveal | Names, shared interests, date/time/location, only for members, enjoyable reveal |
-| F5 | AI conversation cards | Personalised, inclusive, group language, swipe/tap UI, fallback, cached, minimal data to LLM |
+| F5 | Play Together / icebreaker questions | Post-match games hub; AI questions plus classic English questions, shared language, skip/shuffle, fallback, cache, minimal data to LLM |
 | F6 | Mutual connect | Reciprocal opt-in, one-sided reveals nothing, explicit contact sharing, withdraw/decline |
 
 ### A.2 Non-functional / challenge constraints
@@ -51,10 +51,14 @@ International students at THWS struggle to build local friendships, while German
 | F2 | `POST /api/me/invite` → link + QR + Web Share/copy; `#/join/:code` landing shows inviter name; pair compatibility check at registration |
 | F3 | Greedy best-scoring 2D+2I enumeration per campus/slot + validator + reason codes |
 | F4 | Card-flip reveal of 4 members (CSS only), why-this-group bullets, time/place |
-| F5 | Gemini call → 5 JSON questions, 8 s timeout, persisted in group; deterministic fallback bank |
+| F5 | Games hub opens after matching. Conversation Shuffle combines the cached five-card API set with ten supplied classics for English groups; local skip/shuffle/replay, no recorded answers. Gemini keeps its 8 s timeout and fallback. |
 | F6 | Per-member YES/NO toggle; mutual → contact text box; withdraw button |
 
 ### B.2 Explicitly excluded
+Play Together is a local prototype: no levels/XP, leaderboard, attendance verification,
+meeting-time gate, recorded answers, synchronized multiplayer state or game polling.
+Only Conversation Shuffle is playable; other game catalog entries are future work.
+
 Real-time chat, push/e-mail notifications, admin dashboard beyond 3 buttons, university SSO, DynamoDB, Lambda, multiple matching rounds per user, editing profile after registration (delete & re-register instead), attendance check-in (optional idea only), German translation (architecture-ready only), analytics beyond one stats endpoint.
 
 ### B.3 Primary demo scenario (≈4 min)
@@ -64,7 +68,7 @@ Real-time chat, push/e-mail notifications, admin dashboard beyond 3 buttons, uni
 4. Teammate scans it on a second phone → "Lena invited you" → registers **Sam (DOMESTIC)**.
 5. Admin: **Run matching** → result shows 1 new Würzburg group (Lena, Sam, Aiko, Omar) **plus** rejected cases: Schweinfurt "Jonas waits – NOT_ENOUGH_INTERNATIONAL", cross-campus friend pair "FRIEND_DIFFERENT_CAMPUS", Turkish-only speaker "NO_COMMON_LANGUAGE".
 6. Lena's phone: **group reveal** animation → 4 names, "3 of you love Travel", Mensa table, time.
-7. Swipe **AI conversation cards** (badge shows "AI" or "Classic").
+7. Open **Play together** → **Conversation Shuffle**. Answer aloud, skip a question or shuffle. The deck shows "AI + classic questions" or "Classic"; Would You Rather and Find Common Ground are visibly coming soon.
 8. **Connect:** Lena → YES to Aiko (shows "Waiting for them" – Aiko's view reveals nothing; open Aiko's demo restore link to prove it). Lena ↔ Sam both YES → MUTUAL → Lena shares "insta @lena.w" → Sam sees it. Withdraw once to show control.
 9. Close with **metrics slide** (`GET /api/admin/stats`): registration balance, match rate, mutual connections; GDPR one-pager.
 

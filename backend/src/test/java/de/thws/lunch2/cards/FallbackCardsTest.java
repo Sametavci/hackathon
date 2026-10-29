@@ -25,7 +25,7 @@ class FallbackCardsTest {
     }
 
     @Test
-    void englishAndGermanEachHaveEightGenericQuestions() {
+    void englishClassicBankAndGermanGenericQuestionsAreAllReachable() {
         for (String lang : List.of("en", "de")) {
             Set<String> questions = new HashSet<>();
             for (int i = 0; i < 100; i++) {
@@ -33,8 +33,19 @@ class FallbackCardsTest {
                 assertValid(cards);
                 cards.forEach(card -> questions.add(card.text()));
             }
-            assertEquals(8, questions.size());
+            assertEquals(lang.equals("en") ? 10 : 8, questions.size());
+            if (lang.equals("en")) assertEquals(Set.copyOf(IcebreakerQuestions.english()), questions);
         }
+    }
+
+    @Test
+    void suppliedClassicBankHasTenDistinctBoundedQuestionsAndCannotBeMutated() {
+        List<String> questions = IcebreakerQuestions.english();
+        assertEquals(10, questions.size());
+        assertEquals(10, Set.copyOf(questions).size());
+        assertTrue(questions.contains("What is your favourite film/tv series?"));
+        assertTrue(questions.stream().allMatch(text -> !text.isBlank() && text.length() <= 140));
+        assertThrows(UnsupportedOperationException.class, () -> questions.clear());
     }
 
     @Test

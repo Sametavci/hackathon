@@ -2,7 +2,7 @@
 
 Mobile-first web app for the THWS Fit4Germany hackathon: students register in ~60 seconds via QR code, bring a friend,
 and get matched into lunch groups of four (2 locally-based + 2 international students), with a group reveal,
-AI conversation cards and mutual, opt-in contact sharing. Prototype – uses fictional demo data only.
+a Play Together icebreaker game and mutual, opt-in contact sharing. Prototype – uses fictional demo data only.
 
 ## Prerequisites
 - JDK 21 (`java -version`), Node.js ≥ 20 (`node -v`). Maven is optional – the backend ships `./mvnw`.
@@ -44,6 +44,23 @@ fixed fictional key `dev-admin-key`. Shell scripts such as `demo.sh` do not auto
 cd backend && ./mvnw quarkus:dev        # API on http://localhost:8080
 cd frontend && npm run dev              # UI on http://localhost:5173 (proxies /api to :8080)
 ```
+
+## Play Together prototype
+After matching, open the group page → **Play together** → **Conversation Shuffle**.
+One phone is enough: take turns answering aloud, skip any question, shuffle or replay.
+The game uses the existing cached AI/fallback cards and adds the ten supplied classic
+questions for English groups. No Gemini key is needed to play. Other shared languages
+keep their translated questions; English classics are not mixed into those decks.
+
+Would You Rather and Find Common Ground are **coming soon**, not implemented games.
+There are no attendance checks, time locks, levels, shared game sessions or recorded
+answers. Order and progress are local to each screen and reset on reopening. Shuffle
+reorders the available questions; it does not spend another AI request. Existing cached
+group cards are preserved. Source questions: `backend/src/main/resources/cards/`.
+
+To add a game later, provide a renderer and metadata in
+`frontend/src/components/games/gameCatalog.ts`; any game needing backend state requires
+a separate reviewed contract extension. See `docs/TASKS.md` HACK-111 and API_CONTRACT §8.
 
 ## Verify
 ```

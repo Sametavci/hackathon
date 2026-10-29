@@ -51,37 +51,6 @@ public final class FallbackCards {
             Map.entry("boardgames", questions("Which board game works well with four players?", "Would you choose a cooperative game or a friendly competition?",
                     "Welches Brettspiel eignet sich gut für vier Personen?", "Würdest du ein kooperatives Spiel oder einen freundlichen Wettbewerb wählen?")));
 
-    private static final Map<String, List<String>> GENERIC = Map.ofEntries(
-            Map.entry("en", List.of("What small thing makes a campus day more enjoyable?", "What would you name this lunch group?",
-                    "Which fictional character would be a fun lunch guest?", "What skill would you like to try learning?",
-                    "What would an ideal study break look like?", "What kind of campus event would you enjoy?",
-                    "What fun fact have you learned recently?", "What could this group explore together next?")),
-            Map.entry("de", List.of("Was macht einen Tag am Campus für dich schöner?", "Wie würdest du diese Mittagsrunde nennen?",
-                    "Welche erfundene Figur wäre ein lustiger Gast beim Mittagessen?", "Welche neue Fähigkeit würdest du gern ausprobieren?",
-                    "Wie sieht eine ideale Lernpause für dich aus?", "Welche Veranstaltung am Campus würde dir gefallen?",
-                    "Welche spannende Kleinigkeit hast du kürzlich gelernt?", "Was könnte diese Gruppe als Nächstes gemeinsam erkunden?")),
-            // Other catalog languages get generic cards in the actual shared language, never mislabeled English.
-            Map.entry("tr", List.of("Kampüste bir günü senin için daha keyifli yapan nedir?", "Bu öğle yemeği grubuna ne ad verirdin?",
-                    "Hangi kurgusal karakterle öğle yemeği yemek eğlenceli olurdu?", "Hangi yeni beceriyi öğrenmek isterdin?", "İdeal bir ders molası nasıl olurdu?")),
-            Map.entry("ar", List.of("ما الذي يجعل يومك في الجامعة أكثر متعة؟", "ما الاسم الذي تختاره لهذه المجموعة؟",
-                    "أي شخصية خيالية ستكون ضيفاً ممتعاً على الغداء؟", "ما المهارة الجديدة التي تود تعلمها؟", "كيف تتخيل استراحة دراسية مثالية؟")),
-            Map.entry("es", List.of("¿Qué hace más agradable un día en el campus?", "¿Qué nombre le pondrías a este grupo?",
-                    "¿Qué personaje de ficción sería un invitado divertido?", "¿Qué habilidad nueva te gustaría aprender?", "¿Cómo sería tu pausa de estudio ideal?")),
-            Map.entry("fr", List.of("Qu’est-ce qui rend une journée sur le campus plus agréable ?", "Quel nom donnerais-tu à ce groupe ?",
-                    "Quel personnage fictif serait un invité amusant ?", "Quelle nouvelle compétence aimerais-tu apprendre ?", "À quoi ressemble ta pause idéale ?")),
-            Map.entry("it", List.of("Che cosa rende più piacevole una giornata al campus?", "Che nome daresti a questo gruppo?",
-                    "Quale personaggio immaginario sarebbe un ospite divertente?", "Quale nuova abilità vorresti imparare?", "Come sarebbe la tua pausa di studio ideale?")),
-            Map.entry("pt", List.of("O que torna um dia no campus mais agradável?", "Que nome darias a este grupo?",
-                    "Que personagem de ficção seria uma companhia divertida?", "Que nova habilidade gostarias de aprender?", "Como seria a tua pausa de estudo ideal?")),
-            Map.entry("ru", List.of("Что делает день в университете приятнее?", "Как бы ты назвал эту группу?",
-                    "Какого вымышленного героя ты бы пригласил на обед?", "Какой новый навык ты хотел бы освоить?", "Каким был бы твой идеальный перерыв в учёбе?")),
-            Map.entry("uk", List.of("Що робить день в університеті приємнішим?", "Як би ти назвав цю групу?",
-                    "Якого вигаданого героя ти запросив би на обід?", "Яку нову навичку ти хотів би опанувати?", "Якою була б твоя ідеальна перерва в навчанні?")),
-            Map.entry("zh", List.of("什么小事会让校园生活更有趣？", "你会给这个午餐小组取什么名字？",
-                    "你想邀请哪个虚构角色一起吃午饭？", "你想尝试学习什么新技能？", "你理想中的课间休息是什么样的？")),
-            Map.entry("hi", List.of("कैंपस में आपका दिन और मज़ेदार क्या बनाता है?", "आप इस समूह का क्या नाम रखेंगे?",
-                    "किस काल्पनिक किरदार के साथ खाना मज़ेदार होगा?", "आप कौन सा नया कौशल सीखना चाहेंगे?", "पढ़ाई के बीच आपका आदर्श विराम कैसा होगा?")));
-
     public static List<Card> pick(String groupId, List<String> interestIds, String lang) {
         List<Question> interests = new ArrayList<>();
         interestIds.stream().distinct().sorted().forEach(id -> {
@@ -92,7 +61,7 @@ public final class FallbackCards {
         });
         Collections.shuffle(interests, new Random(groupId.hashCode()));
         List<Question> selected = new ArrayList<>(interests.subList(0, Math.min(3, interests.size())));
-        List<String> generic = new ArrayList<>(GENERIC.getOrDefault(lang, GENERIC.get("en")));
+        List<String> generic = new ArrayList<>(IcebreakerQuestions.forLanguage(lang));
         Collections.shuffle(generic, new Random(groupId.hashCode() ^ 0x5DEECE66DL));
         for (String text : generic) {
             if (selected.size() == 5) break;

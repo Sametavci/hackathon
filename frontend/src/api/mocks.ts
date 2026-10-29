@@ -2,6 +2,8 @@ import { ApiError, type RequestOptions } from './client';
 import { clearSession, getToken } from './session';
 import { defaultMensaId } from './mensaCatalog';
 import { mockMeta, reasonMessages } from './mockData';
+import classicQuestions from '../../../backend/src/main/resources/cards/icebreakers.en.json';
+import translatedQuestions from '../../../backend/src/main/resources/cards/generic-translations.json';
 import { validateRegistration } from './validation';
 import type { CardsResponse, ConnectionItem, ConnectChoice, GroupResponse, InviteResponse, MatchRunResponse, MeResponse, ReasonCode, RegistrationRequest, RegistrationResponse, SeedResponse, StatsResponse } from './types';
 
@@ -161,7 +163,12 @@ export async function mockRequest<T>(path: string, options: RequestOptions = {})
     const [, , groupId, sub, target, contact] = path.split('/');
     const group = memberGroup(state, groupId, id);
     if (!sub) output = { ...group, members: group.members.map(p => ({ ...p, isMe: p.id === id, isMyFriend: pairOf(state, id)?.includes(p.id) === true && p.id !== id })) };
-    else if (sub === 'cards') output = { groupId, language: group.commonLanguages.includes('en') ? 'en' : group.commonLanguages[0], source: 'FALLBACK', cards: ['What is one small thing that made you smile this week?', 'Which game would you recommend to this table?', 'What would your ideal free afternoon look like?', 'Which food would you love to learn to cook?', 'What is a place you would like to explore with friends?'].map((text, i) => ({ id: `c${i + 1}`, text, topic: 'travel' })) } satisfies CardsResponse;
+    else if (sub === 'cards') {
+      const language = group.commonLanguages.includes('en') ? 'en' : group.commonLanguages[0];
+      const banks: Readonly<Record<string, readonly string[]>> = translatedQuestions;
+      const questions = language === 'en' ? classicQuestions : banks[language] ?? classicQuestions;
+      output = { groupId, language, source: 'FALLBACK', cards: questions.slice(0, 5).map((text, i) => ({ id: `c${i + 1}`, text, topic: 'generic' })) } satisfies CardsResponse;
+    }
     else if (sub === 'connections') {
       if (!target) output = group.members.filter(p => p.id !== id).map(p => connection(state, groupId, id, p.id));
       else {

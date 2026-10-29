@@ -1,23 +1,75 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { getCards } from '../api/endpoints';
 import { useResource } from '../hooks/useResource';
-import { t } from '../i18n/en';
+import { t } from './games/gameStrings';
+import { buildIcebreakerDeck, shuffleDeck } from './games/icebreakerDeck';
+import type { CardsResponse } from '../api/types';
 import Button from './Button';
 import ErrorBanner from './ErrorBanner';
 import LoadState from './LoadState';
 export default function ConversationCards({ groupId }: { groupId: string }) {
   const cards = useResource(`cards-${groupId}`, () => getCards(groupId));
   const [index, setIndex] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const [shuffled, setShuffled] = useState<CardsResponse['cards'] | null>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
-  const deck = cards.data?.cards ?? [];
+  const initialDeck = useMemo(() => cards.data ? shuffleDeck(buildIcebreakerDeck(cards.data)) : [], [cards.data]);
+  const deck = shuffled ?? initialDeck;
   const activeIndex = Math.min(index, Math.max(0, deck.length - 1));
-  return <section id="conversation-cards" className="scroll-mt-6 space-y-4" aria-labelledby="cards-title"><div><p className="eyebrow">{t('group.cards')}</p><h2 id="cards-title" className="mt-2 text-3xl">{t('cards.title')}</h2><p className="mt-2 text-sm leading-relaxed text-ink-muted">{t('cards.subtitle')}</p></div>
-    {!cards.data ? <LoadState {...cards} /> : !deck.length ? <ErrorBanner error={new Error(t('cards.empty'))} onRetry={cards.reload} /> : <>
-      <div className="relative min-h-64 touch-pan-y rounded-3xl border border-line bg-accent p-6" onPointerDown={e => { start.current = { x: e.clientX, y: e.clientY }; }} onPointerCancel={() => { start.current = null; }} onPointerUp={e => { const origin = start.current; start.current = null; if (!origin) return; const delta = e.clientX - origin.x; if (Math.abs(delta) > 50 && Math.abs(delta) > Math.abs(e.clientY - origin.y)) setIndex(n => Math.max(0, Math.min(deck.length - 1, n + (delta < 0 ? 1 : -1)))); }}>
-        <span className="inline-block rounded-full bg-white/80 px-3 py-1 text-xs font-bold">{t(cards.data.source === 'AI' ? 'cards.ai' : 'cards.classic')}</span><p className="mt-8 text-2xl font-bold leading-snug" aria-live="polite" aria-atomic="true">{deck[activeIndex].text}</p>
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-2"><Button variant="secondary" aria-label={t('cards.previous')} disabled={activeIndex === 0} onClick={() => setIndex(n => n - 1)}>←</Button><span className="text-xs font-semibold" role="status">{t('cards.progress')} {activeIndex + 1} {t('cards.of')} {deck.length}</span><Button variant="secondary" aria-label={t('cards.next')} disabled={activeIndex === deck.length - 1} onClick={() => setIndex(n => n + 1)}>→</Button></div>
-      <div aria-hidden="true" className="flex justify-center gap-2">{deck.map((card, i) => <span key={card.id} className={`h-2 w-2 rounded-full ${i === activeIndex ? 'bg-ink' : 'bg-line'}`} />)}</div>
-    </>}
-  </section>;
+
+  function shuffle() {
+    setShuffled(shuffleDeck(deck));
+    setIndex(0);
+    setFinished(false);
+    start.current = null;
+  }
+
+  function next() {
+    if (activeIndex === deck.length - 1) setFinished(true);
+    else setIndex(previous => Math.min(deck.length - 1, previous + 1));
+  }
+
+  return (
+    <section id="conversation-cards" className="space-y-5" aria-labelledby="cards-title">
+      <header className="space-y-3">
+        <p className="eyebrow">{t('group.cards')}</p>
+        <h1 id="cards-title">{t('games.icebreakers')}</h1>
+        <p className="text-sm leading-relaxed text-ink-muted">{t('cards.subtitle')}</p>
+      </header>
+      {!cards.data ? <LoadState {...cards} /> : !deck.length
+        ? <ErrorBanner error={new Error(t('cards.empty'))} onRetry={cards.reload} />
+        : finished ? <div className="space-y-4 rounded-3xl border border-line bg-brand-soft p-6">
+          <h2>{t('games.finished')}</h2>
+          <p className="text-sm leading-relaxed">{t('games.finishedBody')}</p>
+          <Button className="w-full" onClick={shuffle}>{t('games.replay')}</Button>
+        </div> : <>
+          <div className="relative min-h-64 touch-pan-y rounded-3xl border border-line bg-accent p-6"
+            onPointerDown={event => { start.current = { x: event.clientX, y: event.clientY }; }}
+            onPointerCancel={() => { start.current = null; }}
+            onPointerUp={event => {
+              const origin = start.current;
+              start.current = null;
+              if (!origin) return;
+              const delta = event.clientX - origin.x;
+              if (Math.abs(delta) > 50 && Math.abs(delta) > Math.abs(event.clientY - origin.y)) {
+                setIndex(previous => Math.max(0, Math.min(deck.length - 1, previous + (delta < 0 ? 1 : -1))));
+              }
+            }}>
+            <span className="inline-block rounded-full bg-white/80 px-3 py-1 text-xs font-bold">
+              {t(cards.data.source === 'AI' ? 'games.mixed' : 'cards.classic')}
+            </span>
+            <p className="mt-8 break-words text-2xl font-bold leading-snug" aria-live="polite" aria-atomic="true">{deck[activeIndex].text}</p>
+          </div>
+          <p className="text-center text-sm font-semibold" role="status">{t('cards.progress')} {activeIndex + 1} {t('cards.of')} {deck.length}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="secondary" disabled={activeIndex === 0} onClick={() => setIndex(previous => Math.max(0, previous - 1))}>
+              {t('cards.previous')}
+            </Button>
+            <Button onClick={next}>{t(activeIndex === deck.length - 1 ? 'games.finish' : 'cards.next')}</Button>
+            <Button variant="secondary" onClick={next}>{t('games.skip')}</Button>
+            <Button variant="secondary" onClick={shuffle}>{t('games.shuffle')}</Button>
+          </div>
+        </>}
+    </section>
+  );
 }

@@ -64,6 +64,7 @@ class CardsResourceTest {
         assertEquals("FALLBACK", response.getString("source"));
         List<Map<String, String>> cards = response.getList("cards");
         assertEquals(5, cards.size());
+        assertTrue(cards.stream().anyMatch(card -> IcebreakerQuestions.english().contains(card.get("text"))));
         for (Map<String, String> card : cards) {
             assertEquals(Set.of("id", "text", "topic"), card.keySet());
             assertFalse(card.get("text").isBlank());
