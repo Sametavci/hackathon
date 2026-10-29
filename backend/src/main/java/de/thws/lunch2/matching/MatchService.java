@@ -1,6 +1,10 @@
 package de.thws.lunch2.matching;
 
 import de.thws.lunch2.common.CatalogService;
+import de.thws.lunch2.common.ApiException;
+import de.thws.lunch2.auth.TokenService;
+import de.thws.lunch2.domain.Category;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import de.thws.lunch2.common.MensaService;
 import java.util.LinkedHashMap;
 import de.thws.lunch2.domain.FriendPair;
@@ -37,17 +41,108 @@ public class MatchService {
     private final DataAdmin dataAdmin;
     private final CatalogService catalog;
     private final MensaService mensas;
+    private final TokenService tokens;
+    private final boolean demoMode;
 
     @Inject
     public MatchService(ParticipantRepository participants, GroupRepository groups,
-            FriendPairRepository pairs, DataAdmin dataAdmin, CatalogService catalog, MensaService mensas) {
+            FriendPairRepository pairs, DataAdmin dataAdmin, CatalogService catalog, MensaService mensas,
+            TokenService tokens, @ConfigProperty(name = "lunch2.demo-mode") boolean demoMode) {
         this.participants = participants;
         this.groups = groups;
         this.pairs = pairs;
         this.dataAdmin = dataAdmin;
         this.catalog = catalog;
         this.mensas = mensas;
+        this.tokens = tokens;
+        this.demoMode = demoMode;
     }
+
+    /** Explicit demo-only completion; ordinary matching never creates fictional registrations. */
+    public synchronized MatchRunResponse matchWithDemo() {
+        if (!demoMode) throw new ApiException(403, "FORBIDDEN", "Demo matching is disabled.");
+        MatchRunResponse result = match();
+        List<MatchRunResponse.CreatedGroup> created = new ArrayList<>(result.groupsCreated());
+        Set<String> skipped = new HashSet<>();
+        int number = 1;
+        while (true) {
+            List<Participant> waiting = participants.findAll().stream().filter(p -> p.matchStatus() == MatchStatus.WAITING)
+                    .sorted(Comparator.comparing(Participant::createdAt).thenComparing(Participant::id)).toList();
+            Participant target = waiting.stream().filter(p -> !skipped.contains(p.id())).findFirst().orElse(null);
+            if (target == null) break;
+            Map<String, Participant> byId = waiting.stream().collect(Collectors.toMap(Participant::id, Function.identity()));
+            Map<String, FriendPair> byPair = pairs.findAll().stream().collect(Collectors.toMap(FriendPair::id, Function.identity()));
+            DemoParty party = demoParty(target, waiting, byId, byPair);
+            if (party == null) { skipped.add(target.id()); continue; }
+            Instant now = Instant.now();
+            for (Category category : Category.values()) {
+                long count = party.members().stream().filter(p -> p.category() == category).count();
+                for (long i = count; i < 2; i++) {
+                    participants.save(new Participant(UUID.randomUUID().toString(), tokens.hash(tokens.newToken()),
+                            "Demo student " + number++ + " (demo)", category, target.campus(), List.of(party.language()),
+                            target.interests(), List.of(party.slot()), target.studyField(), MatchStatus.WAITING, null,
+                            ReasonCode.WAITING_FOR_NEXT_ROUND, null, now, now, target.mensaId()));
+                }
+            }
+            result = match();
+            created.addAll(result.groupsCreated());
+            // Each successful iteration adds at most three people and consumes at least four.
+            // The cap guards against inconsistent snapshots or a full capped matching pool.
+            long remaining = participants.findAll().stream().filter(p -> p.matchStatus() == MatchStatus.WAITING).count();
+            if (remaining >= waiting.size()) break;
+        }
+        LOG.infof("Demo matching created %d groups", created.size());
+        return new MatchRunResponse(List.copyOf(created), result.waiting());
+    }
+
+    private DemoParty demoParty(Participant target, List<Participant> waiting,
+            Map<String, Participant> byId, Map<String, FriendPair> byPair) {
+        List<Participant> initial = demoUnit(target, byId, byPair);
+        if (initial.isEmpty() || target.waitingReason() == ReasonCode.FRIEND_DIFFERENT_CAMPUS
+                || target.waitingReason() == ReasonCode.FRIEND_DIFFERENT_MENSA) return null;
+        DemoParty best = null;
+        List<String> languages = target.languages().stream().sorted(Comparator.comparing((String l) -> !l.equals("en"))
+                .thenComparing(Comparator.naturalOrder())).toList();
+        for (String slot : target.slotIds().stream().sorted().toList()) {
+            if (!mensas.allows(mensas.resolve(target.campus(), target.mensaId()), slot, target.mensaId() == null)) continue;
+            for (String language : languages) {
+                if (!compatible(initial, target, slot, language)) continue;
+                List<Participant> chosen = new ArrayList<>(initial);
+                for (Participant candidate : waiting) {
+                    if (chosen.stream().anyMatch(p -> p.id().equals(candidate.id()))) continue;
+                    List<Participant> unit = demoUnit(candidate, byId, byPair);
+                    if (unit.isEmpty() || !compatible(unit, target, slot, language)) continue;
+                    if (unit.stream().anyMatch(p -> chosen.stream().anyMatch(c -> c.id().equals(p.id())))) continue;
+                    List<Participant> combined = new ArrayList<>(chosen);
+                    combined.addAll(unit);
+                    if (combined.stream().filter(p -> p.category() == Category.DOMESTIC).count() <= 2
+                            && combined.stream().filter(p -> p.category() == Category.INTERNATIONAL).count() <= 2) {
+                        chosen.addAll(unit);
+                    }
+                }
+                if (best == null || chosen.size() > best.members().size()) best = new DemoParty(List.copyOf(chosen), slot, language);
+            }
+        }
+        return best;
+    }
+
+    private static List<Participant> demoUnit(Participant participant, Map<String, Participant> byId,
+            Map<String, FriendPair> byPair) {
+        FriendPair pair = byPair.get(participant.friendPairId());
+        if (pair != null && pair.status() != PairStatus.UNLINKED && pair.issue() != null
+                && pair.issue() != ReasonCode.INVITER_ALREADY_MATCHED) return List.of();
+        String friend = friendId(participant, byPair);
+        if (friend == null) return List.of(participant);
+        Participant other = byId.get(friend);
+        return other == null ? List.of() : List.of(participant, other);
+    }
+
+    private boolean compatible(List<Participant> members, Participant target, String slot, String language) {
+        return members.stream().allMatch(p -> p.campus() == target.campus() && mensaId(p).equals(mensaId(target))
+                && p.slotIds().contains(slot) && p.languages().contains(language));
+    }
+
+    private record DemoParty(List<Participant> members, String slot, String language) {}
 
     // Serialize admin match/reset requests so two runs cannot assign the same waiting participants.
     public synchronized MatchRunResponse match() {

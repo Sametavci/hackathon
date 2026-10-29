@@ -22,8 +22,9 @@ Dev 1 supplies E1–E4 and E10–E13; Dev 2 supplies E8–E9 and A1–A4. E5–E
 
 Set `VITE_USE_MOCKS=false` in `frontend/.env.development.local`, start Quarkus with `cd backend && ./mvnw quarkus:dev`, and run Vite in another terminal. Vite proxies `/api` to port 8080. Check `curl -s http://localhost:8080/api/ping` returns `{"ok":true}`. API errors never silently fall back to mocks.
 
-Admin credentials: copy `backend/.env.example` to `backend/.env`, replace the public example key with
-your own `openssl rand -hex 32` value, and start Quarkus from `backend/`. Enter that same value on Admin.
+Admin credentials: copy `.env.example` to `.env` at the repository root and replace the public example key with
+your own `openssl rand -hex 32` value. Run the packaged backend from the repository root, or load `.env`
+into the shell (`set -a; source .env; set +a`) before starting dev mode from `backend/`. Enter that same value on Admin.
 Mock mode still uses `dev-admin-key`; custom backend credentials require `VITE_USE_MOCKS=false`.
 
 A3 (`POST /api/admin/reset`) returns 204 No Content. The Admin Reset button requires confirmation;
@@ -31,6 +32,19 @@ success clears displayed results, private return links and the current participa
 the admin key in sessionStorage. An invalid key leaves data unchanged. Both real and mock adapters
 support this flow. Seed again after a successful reset; the script only performs seed → match and never
 implicitly resets an existing real database.
+
+### Single-presenter demo with a live registration
+
+Register normally, then open Admin in the same browser profile without resetting data or opening somebody
+else's return link. Choose **Match with demo students**. This opt-in action combines existing waiting seed
+and live registrations; if compatible seats are still missing, it creates only the required fictional companions.
+It supports either participant category and the selected Mensa, time and language. No seed is required first.
+Choose **Open My lunch** to return with your original token and reveal your group. Existing groups and
+registrations are preserved. Repeating the action does not rematch assigned participants.
+
+The backend action is `POST /api/admin/match?fillWithDemo=true`, requires the admin key, and returns 403
+outside demo mode. Ordinary **Run matching** continues to use only existing registrations. Incompatible
+friend pairs are never split; they remain waiting until their constraints are resolved or they explicitly unlink.
 
 ## Build one Quarkus application
 
