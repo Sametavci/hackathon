@@ -106,6 +106,55 @@ function match(state: MockState): MatchRunResponse {
   }
   return result;
 }
+function matchWithDemo(state: MockState): MatchRunResponse {
+  let result = match(state);
+  const created = [...result.groupsCreated];
+  const skipped = new Set<string>();
+  let number = 1;
+  const unit = (person: MeResponse): MeResponse[] => {
+    if (me(state, person.id).friend?.pairStatus === 'INCOMPATIBLE') return [];
+    const pair = pairOf(state, person.id);
+    if (!pair) return [person];
+    const friend = state.participants[pair.find(id => id !== person.id)!];
+    return friend?.matchStatus === 'WAITING' ? [person, friend] : [];
+  };
+  while (true) {
+    const waiting = Object.values(state.participants).filter(p => p.matchStatus === 'WAITING');
+    const target = waiting.find(p => !skipped.has(p.id));
+    if (!target) break;
+    const initial = unit(target);
+    if (!initial.length) { skipped.add(target.id); continue; }
+    let best: { people: MeResponse[]; slot: string; language: string } | null = null;
+    const languages = [...target.languages].sort((a, b) => Number(b === 'en') - Number(a === 'en') || a.localeCompare(b, 'en'));
+    for (const slot of [...target.slotIds].sort()) for (const language of languages) {
+      const compatible = (people: MeResponse[]) => people.every(p => p.campus === target.campus
+        && mensaOf(p) === mensaOf(target) && p.slotIds.includes(slot) && p.languages.includes(language));
+      if (!compatible(initial)) continue;
+      const chosen = [...initial];
+      for (const person of waiting) {
+        if (chosen.some(p => p.id === person.id)) continue;
+        const next = unit(person);
+        if (!next.length || !compatible(next) || next.some(p => chosen.some(c => c.id === p.id))) continue;
+        const combined = [...chosen, ...next];
+        if (combined.filter(p => p.category === 'DOMESTIC').length <= 2
+          && combined.filter(p => p.category === 'INTERNATIONAL').length <= 2) chosen.push(...next);
+      }
+      if (!best || chosen.length > best.people.length) best = { people: chosen, slot, language };
+    }
+    if (!best) { skipped.add(target.id); continue; }
+    for (const category of ['DOMESTIC', 'INTERNATIONAL'] as const) {
+      const count = best.people.filter(p => p.category === category).length;
+      for (let i = count; i < 2; i++) register(state, { displayName: `Demo student ${number++} demo`, category,
+        campus: target.campus, mensaId: mensaOf(target), languages: [best.language], interests: target.interests,
+        slotIds: [best.slot], studyField: target.studyField, inviteCode: null, consent: true });
+    }
+    result = match(state);
+    created.push(...result.groupsCreated);
+    if (Object.values(state.participants).filter(p => p.matchStatus === 'WAITING').length >= waiting.length) break;
+  }
+  return { groupsCreated: created, waiting: result.waiting };
+}
+
 export async function mockRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const state = load();
   const method = options.method ?? 'GET';
@@ -156,6 +205,10 @@ export async function mockRequest<T>(path: string, options: RequestOptions = {})
     }).me);
     output = { participants: people.map(p => { const token = Object.keys(state.tokens).find(token => state.tokens[token] === p.id)!; return { id: p.id, displayName: p.displayName, campus: p.campus, category: p.category, restoreUrl: `${baseUrl()}#/back?t=${token}` }; }) } satisfies SeedResponse;
   } else if (path === '/admin/match') output = match(state);
+  else if (path === '/admin/match?fillWithDemo=true') {
+    if (options.auth !== 'admin') fail(401, 'UNAUTHORIZED', 'The admin key is required.');
+    output = matchWithDemo(state);
+  }
   else if (path === '/admin/stats') {
     const people = Object.values(state.participants); const matched = people.filter(p => p.matchStatus === 'MATCHED').length;
     output = { registrations: { DOMESTIC: people.filter(p => p.category === 'DOMESTIC').length, INTERNATIONAL: people.filter(p => p.category === 'INTERNATIONAL').length }, byCampus: { WUERZBURG: people.filter(p => p.campus === 'WUERZBURG').length, SCHWEINFURT: people.filter(p => p.campus === 'SCHWEINFURT').length }, matched, waiting: people.length - matched, matchRate: people.length ? matched / people.length : 0, groups: Object.keys(state.groups).length, friendPairs: state.pairs.length, mutualConnections: state.choices.filter(c => connection(state, c.groupId, c.from, c.to).status === 'MUTUAL').length / 2 } satisfies StatsResponse;

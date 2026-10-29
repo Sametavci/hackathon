@@ -24,6 +24,12 @@ it('encodes dynamic path segments', async () => {
   const fetcher = vi.fn().mockResolvedValue(new Response('{}')); vi.stubGlobal('fetch', fetcher);
   await api.getInvite('a/b?x'); expect(fetcher.mock.calls[0][0]).toBe('/api/invites/a%2Fb%3Fx');
 });
+it('opts into demo completion only when explicitly requested', async () => {
+  const fetcher = vi.fn().mockImplementation(() => Promise.resolve(new Response('{}'))); vi.stubGlobal('fetch', fetcher);
+  await api.runMatch('key', { fillWithDemo: true });
+  expect(fetcher.mock.calls[0][0]).toBe('/api/admin/match?fillWithDemo=true');
+  expect(fetcher.mock.calls[0][1].headers.get('X-Admin-Key')).toBe('key');
+});
 it('resets with the admin key, no participant credentials and an empty 204 response', async () => {
   localStorage.setItem('lunch2.token', 'participant-token');
   const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetcher);

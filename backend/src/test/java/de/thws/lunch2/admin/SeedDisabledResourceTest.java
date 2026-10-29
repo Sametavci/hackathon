@@ -34,4 +34,12 @@ class SeedDisabledResourceTest {
             return Map.of("lunch2.demo-mode", "false");
         }
     }
+
+    @Test
+    void disabledDemoRejectsCompletionBeforeAnyMutation() {
+        data.wipeAll();
+        given().header("X-Admin-Key", adminKey).post("/api/admin/match?fillWithDemo=true")
+                .then().statusCode(403).body("error.code", is("FORBIDDEN"));
+        assertTrue(participants.findAll().isEmpty());
+    }
 }

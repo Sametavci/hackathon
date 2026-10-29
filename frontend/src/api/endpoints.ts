@@ -19,6 +19,7 @@ export const setConnection = (groupId: string, id: string, choice: ConnectChoice
 export const shareContact = (groupId: string, id: string, contact: string) => call<ConnectionItem>(`${connectionsPath(groupId)}/${segment(id)}/contact`, { ...participant, method: 'PUT', body: { contact } });
 export const withdrawContact = (groupId: string, id: string) => call<ConnectionItem>(`${connectionsPath(groupId)}/${segment(id)}/contact`, { ...participant, method: 'DELETE' });
 export const seedDemo = (adminKey: string) => call<SeedResponse>('/admin/seed', { auth: 'admin', adminKey, method: 'POST' });
-export const runMatch = (adminKey: string) => call<MatchRunResponse>('/admin/match', { auth: 'admin', adminKey, method: 'POST' });
+export const runMatch = (adminKey: string, options: { fillWithDemo?: boolean } = {}) => call<MatchRunResponse>(
+  options.fillWithDemo ? '/admin/match?fillWithDemo=true' : '/admin/match', { auth: 'admin', adminKey, method: 'POST' });
 export const getStats = (adminKey: string) => call<StatsResponse>('/admin/stats', { auth: 'admin', adminKey });
 export const resetDemo = (adminKey: string) => call<void>('/admin/reset', { auth: 'admin', adminKey, method: 'POST' });

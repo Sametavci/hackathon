@@ -277,6 +277,15 @@ this bypasses the normal registration compatibility check for that fictional edg
 
 ### A2 `POST /api/admin/match` → 200 `MatchRunResponse`
 
+Optional query `fillWithDemo=true` enables explicit demo completion (403 `FORBIDDEN` unless
+`lunch2.demo-mode=true`). Normal matching always combines every WAITING registration, including seed
+and live registrations. Completion first runs that normal round, then adds only missing fictional seats
+for remaining compatible waiting participants and runs the same engine again. It preserves existing
+registrations, tokens and saved groups; it never resets data. Same campus/Mensa/slot, a shared language,
+2 DOMESTIC + 2 INTERNATIONAL and active friend-pair constraints remain mandatory. Incompatible friend
+pairs remain waiting. The response aggregates all groups created by the action and the final waiting list.
+This opt-in action does not require seed data to have been loaded first and never runs on registration.
+
 ```json
 {
   "groupsCreated": [{ "groupId": "…", "campus": "WUERZBURG", "slotId": "2026-11-03T12:15", "memberNames": ["Lena", "Sam", "Aiko", "Omar"], "score": 17 }],

@@ -129,6 +129,28 @@ describe('stateful demo API', () => {
     await expect(mockRequest('/me', auth)).rejects.toMatchObject({ status: 401 });
     await expect(mockRequest('/admin/seed', { ...admin, adminKey: 'wrong' })).rejects.toMatchObject({ status: 401 });
   });
+  it('completes a single live registration with compatible demo students without changing the session', async () => {
+    const live = await signup('Live student'); setToken(live.accessToken);
+    expect((await mockRequest<MatchRunResponse>('/admin/match', admin)).groupsCreated).toHaveLength(0);
+    const result = await mockRequest<MatchRunResponse>('/admin/match?fillWithDemo=true', admin);
+    expect(result.groupsCreated).toHaveLength(1);
+    expect(getToken()).toBe(live.accessToken);
+    expect((await mockRequest<MeResponse>('/me', auth)).matchStatus).toBe('MATCHED');
+    const group = await mockRequest<GroupResponse>(`/groups/${result.groupsCreated[0].groupId}`, auth);
+    expect(group.members).toHaveLength(4);
+    expect(group.members.some(p => p.id === live.me.id && p.isMe)).toBe(true);
+    expect((await mockRequest<MatchRunResponse>('/admin/match?fillWithDemo=true', admin)).groupsCreated).toHaveLength(0);
+  });
+  it('uses compatible existing participants before adding missing fictional seats', async () => {
+    const a = await signup('Live domestic');
+    const b = await signup('Live international', { category: 'INTERNATIONAL' });
+    const result = await mockRequest<MatchRunResponse>('/admin/match?fillWithDemo=true', admin);
+    expect(result.groupsCreated).toHaveLength(1);
+    expect((await mockRequest<StatsResponse>('/admin/stats', admin)).matched).toBe(4);
+    setToken(a.accessToken);
+    const group = await mockRequest<GroupResponse>(`/groups/${result.groupsCreated[0].groupId}`, auth);
+    expect(group.members.map(p => p.id)).toEqual(expect.arrayContaining([a.me.id, b.me.id]));
+  });
   it('resets all mock data, revokes old links and preserves unrelated storage and admin credentials', async () => {
     vi.stubGlobal('sessionStorage', memoryStorage());
     sessionStorage.setItem('lunch2.adminKey', 'dev-admin-key');

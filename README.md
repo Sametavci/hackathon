@@ -27,9 +27,19 @@ Frontend: `frontend/.env.development` → `VITE_USE_MOCKS=true` serves mock data
 
 ### Local admin key
 
-Copy `backend/.env.example` to `backend/.env` (do not overwrite an existing local file).
+Copy `.env.example` to `.env` at the repository root (do not overwrite an existing local file).
 Generate your private admin key with `openssl rand -hex 32` and replace the example `LUNCH2_ADMIN_KEY`
-value in `backend/.env`. Start Quarkus from `backend/` so it reads that directory's `.env` file.
+value in `.env`. Start the packaged backend from the repository root so it reads that directory's `.env` file.
+For `quarkus:dev`, load the file into the shell first, then change directory:
+
+```sh
+set -a
+source .env
+set +a
+cd backend
+./mvnw quarkus:dev
+```
+
 An already-exported shell variable takes precedence over `.env`; restart the backend after changing the key.
 Open `/#/admin` and enter exactly the same key. The UI keeps it in sessionStorage and sends it as
 `X-Admin-Key`; never put it in a `VITE_` variable or a URL. Missing/incorrect keys return 401.
@@ -37,7 +47,7 @@ Local `.env` files are git-ignored; only the example should be committed.
 
 This custom key applies to the real backend (`VITE_USE_MOCKS=false`). Frontend mock mode uses the
 fixed fictional key `dev-admin-key`. Shell scripts such as `demo.sh` do not automatically load
-`backend/.env`; export the same `LUNCH2_ADMIN_KEY` in the shell before running them.
+`.env`; load it into the shell as shown above before running them.
 
 ## Run locally
 ```

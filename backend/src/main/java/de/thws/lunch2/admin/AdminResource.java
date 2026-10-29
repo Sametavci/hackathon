@@ -6,6 +6,8 @@ import de.thws.lunch2.matching.MatchService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
@@ -40,8 +42,8 @@ public class AdminResource {
 
     @POST
     @Path("/match")
-    public MatchRunResponse match() {
-        return matching.match();
+    public MatchRunResponse match(@QueryParam("fillWithDemo") @DefaultValue("false") boolean fillWithDemo) {
+        return fillWithDemo ? matching.matchWithDemo() : matching.match();
     }
 
     @POST
