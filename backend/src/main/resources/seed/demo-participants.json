@@ -1,0 +1,20 @@
+[
+  {"key":"mia","displayName":"Mia (demo)","category":"DOMESTIC","campus":"WUERZBURG","languages":["en","de"],"interests":["travel","gaming"],"dayIndex":0,"time":"11:30","studyField":"COMPUTER_SCIENCE","friendKey":"sofia"},
+  {"key":"sofia","displayName":"Sofia (demo)","category":"INTERNATIONAL","campus":"WUERZBURG","languages":["en","es"],"interests":["travel","music"],"dayIndex":0,"time":"11:30","studyField":"DESIGN","friendKey":"mia"},
+  {"key":"paul","displayName":"Paul (demo)","category":"DOMESTIC","campus":"WUERZBURG","languages":["en","de"],"interests":["gaming","tech"],"dayIndex":0,"time":"11:30","studyField":"ENGINEERING","friendKey":null},
+  {"key":"carlos","displayName":"Carlos (demo)","category":"INTERNATIONAL","campus":"WUERZBURG","languages":["en","es"],"interests":["travel","tech"],"dayIndex":0,"time":"11:30","studyField":"BUSINESS","friendKey":null},
+  {"key":"aiko","displayName":"Aiko (demo)","category":"INTERNATIONAL","campus":"WUERZBURG","languages":["en"],"interests":["travel","anime"],"dayIndex":1,"time":"12:15","studyField":"DESIGN","friendKey":null},
+  {"key":"omar","displayName":"Omar (demo)","category":"INTERNATIONAL","campus":"WUERZBURG","languages":["en","ar"],"interests":["travel","football"],"dayIndex":1,"time":"12:15","studyField":"ENGINEERING","friendKey":null},
+  {"key":"jonas","displayName":"Jonas (demo)","category":"DOMESTIC","campus":"SCHWEINFURT","languages":["en","de"],"interests":["football"],"dayIndex":1,"time":"12:15","studyField":"ENGINEERING","friendKey":null},
+  {"key":"felix","displayName":"Felix (demo)","category":"DOMESTIC","campus":"SCHWEINFURT","languages":["en","de"],"interests":["gaming"],"dayIndex":1,"time":"12:15","studyField":"COMPUTER_SCIENCE","friendKey":null},
+  {"key":"emma","displayName":"Emma (demo)","category":"DOMESTIC","campus":"SCHWEINFURT","languages":["en","de"],"interests":["music"],"dayIndex":1,"time":"12:15","studyField":"BUSINESS","friendKey":null},
+  {"key":"fatima","displayName":"Fatima (demo)","category":"INTERNATIONAL","campus":"SCHWEINFURT","languages":["en","ar"],"interests":["cooking"],"dayIndex":1,"time":"12:15","studyField":"ENGINEERING","friendKey":null},
+  {"key":"ben","displayName":"Ben (demo)","category":"DOMESTIC","campus":"WUERZBURG","languages":["en"],"interests":["hiking"],"dayIndex":1,"time":"11:30","studyField":"OTHER","friendKey":"zeynep"},
+  {"key":"zeynep","displayName":"Zeynep (demo)","category":"INTERNATIONAL","campus":"SCHWEINFURT","languages":["en","tr"],"interests":["hiking"],"dayIndex":1,"time":"11:30","studyField":"OTHER","friendKey":"ben"},
+  {"key":"deniz","displayName":"Deniz (demo)","category":"DOMESTIC","campus":"WUERZBURG","languages":["tr"],"interests":["music"],"dayIndex":0,"time":"13:00","studyField":"OTHER","friendKey":null},
+  {"key":"leon","displayName":"Leon (demo)","category":"DOMESTIC","campus":"WUERZBURG","languages":["de"],"interests":["football"],"dayIndex":0,"time":"13:00","studyField":"BUSINESS","friendKey":null},
+  {"key":"nora","displayName":"Nora (demo)","category":"DOMESTIC","campus":"WUERZBURG","languages":["de"],"interests":["reading"],"dayIndex":0,"time":"13:00","studyField":"SOCIAL_SCIENCES","friendKey":null},
+  {"key":"yuki","displayName":"Yuki (demo)","category":"INTERNATIONAL","campus":"WUERZBURG","languages":["en"],"interests":["anime"],"dayIndex":0,"time":"13:00","studyField":"DESIGN","friendKey":null},
+  {"key":"arjun","displayName":"Arjun (demo)","category":"INTERNATIONAL","campus":"WUERZBURG","languages":["en"],"interests":["tech"],"dayIndex":0,"time":"13:00","studyField":"COMPUTER_SCIENCE","friendKey":null},
+  {"key":"lucia","displayName":"Lucia (demo)","category":"INTERNATIONAL","campus":"WUERZBURG","languages":["en"],"interests":["art"],"dayIndex":0,"time":"13:00","studyField":"DESIGN","friendKey":null}
+]
