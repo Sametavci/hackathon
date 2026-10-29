@@ -406,14 +406,85 @@ invite/connect/cards/admin features are not expanded by this task.
 
 ## HACK-309 — Animated landing and English/Deutsch (2026-10-29)
 
-User-approved frontend extension: centered animated headlines/table, pause and
+User-approved frontend extension: centered animated headlines/table and
 reduced-motion support; shared typed English/German dictionaries, persisted locale
 selector on every page, localized catalogs/dates/known errors and reactive page
 content without resetting form/session state. Integration includes existing game,
 Connect and Admin strings; underlying behavior and the API contract stay intact.
 Verification: frontend lint, Vitest and build; locale priority/key parity/date tests;
-headline timer pause/resume/cleanup tests; mobile/desktop browser checks in both
+headline timer suspension/resume/cleanup tests; mobile/desktop browser checks in both
 languages, including form-state preservation.
+
+### HACK-309 follow-up — frontend polish (2026-10-29)
+Landing palette follow-up: replace the two yellow faces with pastel rose (top) and sky blue (left); retain the existing motion.
+
+User-approved coordinated scope covers Dev 3 frontend components, registration,
+translations and tests plus the necessary Dev 1 documentation updates in SPEC,
+ARCHITECTURE, API_CONTRACT, TASKS and README. No other ownership scope is extended.
+Remove the manual pause control; use 16-second table rotation, 1.8–2.8-second
+non-repeating headline shuffle, staggered face gestures and centered German headings.
+Use one flag menu and localized alphabetical equal-width language/interest tiles.
+Add a compact current-Berlin-week calendar, week arrows/swipe/keyboard navigation
+and inline month browsing. Initial focus is today; past days disabled; empty days
+explain missing availability. Preserve existing slot IDs, backend range and selections.
+Verify lint, Vitest and build; check EN/DE at 375/390px and desktop, menu keyboard/focus,
+form preservation, month/year/leap/DST boundaries and reduced-motion behavior.
+
+Headline/dil seçimi düzeltmesi: Başlık satırları ayrı zamanlayıcılarla ve 900 ms başlangıç farkıyla değişir; sabit kelime alanları yatay/dikey kaymayı önler; değişen kelimeler kendi kırpılmış alanlarında alttan gelir. Almanca başlangıç “Gute Küche” olarak güncellendi; ilk kelime her varyantta “Gute” kalır. Bayrak seçimi pointerdown sırasında uygulanarak menünün odak kaybıyla seçimden önce kapanması önlenir. API değişikliği yoktur. Kullanıcı isteğiyle bu düzeltme için kontrol/test çalıştırılmadı.
+
+### HACK-309 / HACK-305 / HACK-208 follow-up (2026-10-29)
+User-authorized coordinated changes include Dev 1 common slot/Mensa date resolution,
+application.properties and docs; Dev 2 AdminPage presentation; Dev 3 calendar, mocks,
+MePage, ReturnLink, mobile safe area and translations. This supersedes the earlier
+choice to keep the fixed 2 November default. Default TODAY resolves in Berlin at
+startup; explicit ISO dates remain supported. Generate weekdays over 366 calendar days with existing
+Mensa hours; disable weekends and past days and show a five-day week strip.
+Simplify Me/Admin with concise status, compact summaries and expandable secondary
+information. Preserve match/seed/metrics/demo/reset behavior, confirmations, private
+return-link handling and error states. No new dependencies or API wire changes.
+Per the user's continuing instruction, no test, build or browser checks were run
+for this follow-up. Backend restart is needed to apply its new default; existing
+explicit LUNCH2_EVENT_START_DATE overrides must be removed or set to TODAY to use it.
+
+Availability horizon correction: the calendar and both real/mock catalogs cover 366 calendar days from the event start, skipping weekends. The same weekday-specific Mensa hours and 45-minute slots are repeated across that range; time values, IDs and selection limits are unchanged. Calendar dates without actual Mensa slots are disabled, and week/month navigation stops at the returned availability boundary. This supersedes the previous five-weekday horizon. No tests or browser checks were run, as requested.
+
+HACK-309 brand polish (user requested): replace the standalone superscript badge with a four-person table SVG, balanced Lunch² wordmark and matching favicon. Frontend plus required documentation only; no checks/tests run per user preference.
+
+### HACK-309 — all-pages frontend polish (user requested)
+Coordinated frontend presentation scope explicitly includes Dev 1 Connect UI, Dev 2
+Admin UI and Dev 3 shared/participant/game pages plus required documentation. Review
+all routes, reduce repetitive copy and visual weight, unify headings/cards/buttons,
+add profile avatars and disclose secondary explanations. No backend changes, new
+endpoints/dependencies or profile editing features. Verify typecheck, frontend tests,
+build and EN/DE mobile/desktop page rendering; retain privacy and destructive-action
+confirmations. This request authorizes the page checks previously deferred.
+
+Frontend verification found the old mock demo seed still used fixed November slots.
+It now takes its two slots from the current mock catalog; the existing seed/matching
+scenario and backend behavior remain unchanged.
+
+Frontend polish verification completed: `npm run lint` passed; `npm test` passed
+14 files / 89 tests; `npm run build` passed (86 modules). Chrome checks covered
+EN/DE at 375px, 390px and 1280px for landing, registration, join, restore, privacy,
+admin, waiting/matched profiles, group, connect, games hub and cards. Registration
+language/interest/calendar steps, review, revealed group cards, populated admin
+profiles and metrics were also checked. Each rendered route had one h1 and no
+horizontal page overflow. Browser data used only a separate temporary mock profile;
+the running backend was untouched. Preview runs separately on localhost:5190.
+
+### HACK-303 single-day time selection (user requested)
+Frontend registration replaces old-day slots when a time from another date is chosen. Multiple times within one day remain supported. Added same-day toggle and cross-day replacement regression tests; no backend or endpoint changes.
+
+### HACK-306 follow-up — seating and arrival plan (2026-10-29)
+Dev 3 frontend scope: four revealable seats around a central table, EN/DE main-
+entrance instructions five minutes before lunch, original slot/venue, sequential
+mock tables. Required docs updated. No backend ownership transfer. Dev 2 follow-up:
+assign persisted sequential labels for real groups through existing location text.
+Legacy groups retain “Your table”. Verification: frontend lint, tests and build.
+Verification completed: `npm run lint` passed; `npm test` passed 17 files / 113 tests;
+`npm run build` passed (96 modules). Headless Chrome checked EN/DE at 375 px:
+four seats, all four tap reveals and no horizontal overflow. Screenshot reviewed.
+Existing game SSR tests emit React Router useLayoutEffect warnings, without failures.
 
 ## HACK-310 — Buddy invite API and frontend (2026-10-29)
 

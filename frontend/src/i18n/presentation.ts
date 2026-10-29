@@ -54,3 +54,8 @@ export function groupExplanation(text: string, meta: MetaResponse | null): strin
   if (text === 'A language you can all share.') return t('group.sharedLanguage');
   return text;
 }
+
+export function sortByLabel<T>(items: readonly T[], label: (item: T) => string, locale = getLocale()): T[] {
+  const collator = new Intl.Collator(locale, { sensitivity: 'base' });
+  return [...items].sort((a, b) => collator.compare(label(a), label(b)));
+}

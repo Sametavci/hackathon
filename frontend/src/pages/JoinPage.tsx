@@ -7,6 +7,7 @@ import { useResource } from '../hooks/useResource';
 import { formatSlot } from '../i18n/presentation';
 import LoadState from '../components/LoadState';
 import { useI18n } from '../i18n';
+import PageHeading from '../components/PageHeading';
 import Card from '../components/Card';
 import { buttonClasses } from '../components/Button';
 export default function JoinPage() {
@@ -14,12 +15,12 @@ export default function JoinPage() {
   const { t } = useI18n();
   const invite = useResource(`invite:${code}`, () => getInvite(code));
   const meta = useResource('meta', getMeta);
-  if (invite.error) return <Card className="mt-6 space-y-4"><h1>{t('buddy.unavailable')}</h1><LoadState {...invite} /><Link to="/register" className={buttonClasses}>{t('buddy.solo')}</Link></Card>;
+  if (invite.error) return <Card className="mt-6 space-y-4"><PageHeading title={t('buddy.unavailable')} /><LoadState {...invite} /><Link to="/register" className={buttonClasses}>{t('buddy.solo')}</Link></Card>;
   if (!invite.data) return <LoadState {...invite} />;
   if (!meta.data) return <LoadState {...meta} />;
   const data = invite.data;
   const ready = hasBuddyPlan(data, meta.data);
-  return <Card className="mt-6 space-y-5"><h1>{t('buddy.invited', { name: data.inviterDisplayName })}</h1>
+  return <Card className="mt-6 space-y-5"><PageHeading title={t('buddy.invited', { name: data.inviterDisplayName })} />
     <p>{meta.data.campuses.find(c => c.id === data.campus)?.label}</p>
     <p className="font-semibold">{meta.data.mensas?.find(m => m.id === data.mensaId)?.name}</p>
     <ul className="space-y-2 text-sm text-ink-muted">{(data.slotIds ?? []).map(id => <li key={id}>{formatSlot(meta.data!.slots.find(s => s.id === id) ?? id)}</li>)}</ul>

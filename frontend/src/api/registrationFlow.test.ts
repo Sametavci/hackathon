@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createAutoAdvance, isAutomaticStep } from './registrationFlow';
+import { createAutoAdvance, isAutomaticStep, toggleDaySlot } from './registrationFlow';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
@@ -25,5 +25,19 @@ describe('automatic registration navigation', () => {
     vi.runAllTimers(); expect(advance).not.toHaveBeenCalled();
     transition.schedule(2); vi.runAllTimers();
     expect(advance).toHaveBeenCalledTimes(1); expect(advance).toHaveBeenCalledWith(2);
+  });
+});
+
+describe('single-day lunch choices', () => {
+  it('keeps multiple times on one day and allows removing a selected time', () => {
+    const first = toggleDaySlot([], '2026-12-15T11:00');
+    const both = toggleDaySlot(first, '2026-12-15T11:45');
+    expect(both).toEqual(['2026-12-15T11:00', '2026-12-15T11:45']);
+    expect(toggleDaySlot(both, '2026-12-15T11:00')).toEqual(['2026-12-15T11:45']);
+    expect(first).toEqual(['2026-12-15T11:00']);
+  });
+  it('replaces all previous-day times when a different day is selected', () => {
+    expect(toggleDaySlot(['2026-12-15T11:00', '2026-12-15T11:45'], '2026-12-16T11:00'))
+      .toEqual(['2026-12-16T11:00']);
   });
 });

@@ -6,6 +6,7 @@ import { clearSession, getToken, setToken } from '../api/session';
 import { buttonClasses } from '../components/Button';
 import ErrorBanner from '../components/ErrorBanner';
 import Spinner from '../components/Spinner';
+import PageHeading from '../components/PageHeading';
 import { useI18n } from '../i18n';
 export default function RestorePage() {
   const { t } = useI18n();
@@ -28,5 +29,5 @@ export default function RestorePage() {
       setError(e instanceof ApiError && e.status === 401 ? new Error(t('restore.invalid')) : e);
     });
   }, [navigate]);
-  return <div className="space-y-5 pt-4"><h1>{t('restore.title')}</h1>{error ? <><ErrorBanner error={error} /><Link to="/register" className={buttonClasses}>{t('restore.register')}</Link></> : <Spinner />}</div>;
+  return <div className="space-y-5 pt-4"><PageHeading title={t('restore.title')} />{error ? <><ErrorBanner error={error} /><Link to="/register" className={buttonClasses}>{t('restore.register')}</Link></> : <Spinner />}</div>;
 }

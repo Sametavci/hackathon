@@ -7,6 +7,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 @ApplicationScoped
 public class SlotService {
+    static final int BOOKING_DAYS = 366;
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT);
     private static final DateTimeFormatter LABEL_DATE = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH);
     private final List<Slot> slots;
@@ -27,20 +29,23 @@ public class SlotService {
             throw new IllegalArgumentException("At least one lunch slot time must be configured");
         }
         List<Slot> generated = new ArrayList<>();
-        LocalDate date = LocalDate.parse(eventStartDate);
-        int weekdays = 0;
-        while (weekdays < 5) {
+        LocalDate date = startDate(eventStartDate);
+        LocalDate end = date.plusDays(BOOKING_DAYS);
+        while (date.isBefore(end)) {
             if (date.getDayOfWeek() != DayOfWeek.SATURDAY && date.getDayOfWeek() != DayOfWeek.SUNDAY) {
                 for (LocalTime time : times) {
                     String start = time.format(TIME);
                     generated.add(new Slot(date + "T" + start, date.toString(), start,
                             time.plusMinutes(45).format(TIME), date.format(LABEL_DATE) + " · " + start));
                 }
-                weekdays++;
             }
             date = date.plusDays(1);
         }
         slots = List.copyOf(generated);
+    }
+
+    static LocalDate startDate(String configured) {
+        return "TODAY".equals(configured) ? LocalDate.now(ZoneId.of("Europe/Berlin")) : LocalDate.parse(configured);
     }
 
     public List<Slot> slots() {

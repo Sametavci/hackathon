@@ -137,16 +137,59 @@ Existing group location strings remain intact; new groups store the catalog name
 
 ## Frontend locale and landing motion (HACK-309, 2026-10-29)
 
+Landing face colors are scoped to `.lunch-seat-top` (rose-200) and `.lunch-seat-left` (sky-200) in `index.css`.
+
 `frontend/src/i18n/index.ts` owns the locale and exposes a `useSyncExternalStore`
 subscription through `useI18n`. Typed `en.ts`/`de.ts` dictionaries require matching
 keys; existing page/game string modules delegate to this shared dictionary.
 `presentation.ts` maps catalog IDs, known error/reason codes, dates and existing
 group explanation templates to localized display values. Locale updates preserve
 component identity and form state, set HTML `lang`, and persist `lunch2.locale`.
-`useLandingMotion` coordinates the four-second headline cycle with pause, visibility
-and reduced-motion state; the table uses a 24-second CSS rotation with counter-
-rotating faces. Timers and listeners are cleaned up on unmount. No new dependencies
+`useLandingMotion` coordinates a non-repeating shuffled paired-headline cycle
+(1.8–2.8 seconds) with visibility and reduced-motion state; the table uses a
+16-second CSS rotation with counter-rotating faces and independent staggered gestures. Timers and listeners are cleaned up on unmount. No new dependencies
 or backend changes are needed.
+
+The shared header uses a single-flag menu with keyboard navigation, focus restoration
+and outside/Escape dismissal. Registration sorts copied catalogs using `Intl.Collator`
+and localized labels without changing IDs or selected state. `DateCarousel` owns its
+inline month view; the registration page owns the active civil date and selected slot
+IDs. `calendarDates.ts` uses UTC civil-date arithmetic and Europe/Berlin for today.
+Weeks start Monday; the initial active date is today, independent of slot availability.
+The frontend never generates bookable slots: past days are disabled and time choices
+remain filtered by the selected Mensa's existing API slot IDs. No dependencies added.
+
+Frontend refinement: headline rows change independently with a staggered start; fixed word widths keep the heading stationary while changing words slide upward inside a clipped area. German headlines consistently begin with “Gute” (including “Gute Küche”). Flag selection applies on pointer activation before blur can dismiss the menu. No API changes.
+
+### Current weekdays and reduced visual density
+`SlotService.startDate` resolves the existing event-date setting: `TODAY` uses
+Europe/Berlin at process startup, while ISO dates preserve pinned demos. MensaService
+uses the same resolver. Both retain the existing weekday generation algorithm over 366 calendar days;
+mock catalog generation defaults to the current Berlin date. No persisted IDs are
+rewritten. Frontend calendar helpers normalize weekend focus and skip weekends in
+keyboard navigation; the week strip is Mon–Fri and month weekend buttons are disabled.
+MePage/AdminPage use local native details elements for secondary information, keeping
+all API calls, destructive-action confirmations and return-link copy fallback intact.
+The existing shared layout gains top safe-area padding for mobile browser chrome.
+
+Calendar availability now spans 366 calendar days, weekdays only, with unchanged Mensa hours. Dates without returned Mensa slots are disabled; navigation ends at the available range. The earlier five-weekday limit is superseded.
+
+BrandLogo renders the shared header wordmark and the vector asset `frontend/public/lunch2-icon.svg`, also referenced as the favicon. No dependencies or API changes.
+
+Frontend presentation adds shared PageHeading, Avatar and native Disclosure
+components. Existing Card/Button styles provide the common compact treatment.
+Me/Admin, registration, group reveal, connect, games, join, restore and privacy adopt
+this presentation without changing data flow, API calls or account capabilities.
+
+`registrationFlow.toggleDaySlot` enforces the single-day UI selection by keeping only slot IDs with the selected slot’s ISO date. RegisterPage uses a functional state update; calendar browsing and existing API behavior are unchanged.
+
+### HACK-306 — table and arrival presentation (2026-10-29)
+GroupTable uses a three-by-three CSS grid with four MemberCard seats and a central
+table. Keyboard reveals and reduced-motion behavior remain. tablePlan parses an
+optional trailing ` · Lunch² Table N` from location, preserving the venue, and
+subtracts five civil minutes from slot.date/start, including midnight rollover.
+Mocks allocate numbers from stored group count. No backend files change; Dev 2
+must implement persisted real numbering before numbers work across real devices.
 
 ## Buddy frontend integration (2026-10-29)
 

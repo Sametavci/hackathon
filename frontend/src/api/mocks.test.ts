@@ -21,6 +21,16 @@ beforeEach(() => { vi.stubGlobal('localStorage', memoryStorage()); vi.stubGlobal
 afterEach(() => vi.unstubAllGlobals());
 
 describe('stateful demo API', () => {
+  it('assigns sequential tables across rounds and keeps the same number for all members', async () => {
+    const first = await lunch();
+    const second = await lunch();
+    setToken(first.a.accessToken);
+    expect((await mockRequest<GroupResponse>(`/groups/${first.group}`, auth)).location).toMatch(/ · Lunch² Table 1$/);
+    setToken(second.a.accessToken);
+    expect((await mockRequest<GroupResponse>(`/groups/${second.group}`, auth)).location).toMatch(/ · Lunch² Table 2$/);
+    setToken(first.b.accessToken);
+    expect((await mockRequest<GroupResponse>(`/groups/${first.group}`, auth)).location).toMatch(/ · Lunch² Table 1$/);
+  });
   it('serves five stable classic cards and blocks non-members', async () => {
     const { group } = await lunch();
     const first = await mockRequest<CardsResponse>(`/groups/${group}/cards`, auth);

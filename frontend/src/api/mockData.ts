@@ -24,5 +24,5 @@ export const mockMeta: MetaResponse = {
     ['startups', 'Startups', '💡'], ['languages', 'Languages', '💬'], ['anime', 'Anime', '🌸'], ['boardgames', 'Board games', '🎲'],
   ].map(([id, label, emoji]) => ({ id, label, emoji })),
   studyFields: ['COMPUTER_SCIENCE:Computer Science', 'ENGINEERING:Engineering', 'BUSINESS:Business', 'DESIGN:Design', 'SOCIAL_SCIENCES:Social Sciences', 'HEALTH:Health', 'OTHER:Other'].map(value => { const [id, label] = value.split(':'); return { id, label }; }),
-  ...createMensaCatalog('2026-11-02'),
+  ...createMensaCatalog(),
 };
