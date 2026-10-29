@@ -121,6 +121,21 @@ class CardsResourceTest {
         assertEquals(FallbackCards.pick(groupId, original.sharedInterests(), "tr"), groups.findById(groupId).orElseThrow().cards().cards());
     }
 
+    @Test
+    void refreshWithoutConfiguredAiReturns503AndKeepsTheCachedCards() {
+        List<String> before = read().getList("cards.text");
+        given().auth().oauth2(memberToken).when().post("/api/groups/{id}/cards/refresh", groupId)
+                .then().statusCode(503).body("error.code", is("CARDS_UNAVAILABLE"));
+        assertEquals(before, read().getList("cards.text"));
+    }
+
+    @Test
+    void refreshIsMemberOnlyAndNeedsAToken() {
+        given().when().post("/api/groups/{id}/cards/refresh", groupId).then().statusCode(401);
+        given().auth().oauth2(outsiderToken).when().post("/api/groups/{id}/cards/refresh", groupId)
+                .then().statusCode(403).body("error.code", is("FORBIDDEN"));
+    }
+
     private JsonPath read() {
         return given().auth().oauth2(memberToken).when().get("/api/groups/{id}/cards", groupId)
                 .then().statusCode(200).contentType(ContentType.JSON).extract().jsonPath();

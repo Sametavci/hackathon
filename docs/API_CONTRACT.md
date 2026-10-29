@@ -92,6 +92,7 @@ Catalogs (served by `GET /api/meta`, defined in backend `CatalogService`, owned 
 | E7 | `POST /api/me/friend/unlink` | Bearer | Dev 1 | "Match us separately" |
 | E8 | `GET /api/groups/{groupId}` | Bearer, member | Dev 2 | Group reveal |
 | E9 | `GET /api/groups/{groupId}/cards` | Bearer, member | Dev 2 | Conversation cards (lazy-generated, cached) |
+| E9b | `POST /api/groups/{groupId}/cards/refresh` | Bearer, member | Dev 2 | New AI question set that avoids questions the table saw (additive) |
 | E10 | `GET /api/groups/{groupId}/connections` | Bearer, member | Dev 1 | My connect choices for the other 3 members |
 | E11 | `PUT /api/groups/{groupId}/connections/{participantId}` | Bearer, member | Dev 1 | Set YES/NO |
 | E12 | `PUT /api/groups/{groupId}/connections/{participantId}/contact` | Bearer, member | Dev 1 | Share my contact with a MUTUAL connection |
@@ -238,6 +239,14 @@ classic questions in `resources/cards/icebreakers.en.json`. The browser combines
 classics with English `/cards` results for the local game; the displayed deck can therefore
 contain more than five questions. `source: AI` describes the server set, and the game labels
 the combined deck "AI + classic questions". Old cached sets are returned unchanged.
+
+### E9b `POST /api/groups/{groupId}/cards/refresh` → 200 `CardsResponse` (additive)
+Generates a new AI set from **all members' interests** (shared ones first), avoiding every question the table has already seen, and replaces the cached set. `cards[].topic` is the interest ID a question is about, or `generic`.
+- 503 `CARDS_UNAVAILABLE` — no AI key configured, or generation failed (cached cards stay unchanged).
+- 429 `CARDS_LIMIT` — the table used its 10 new sets for this server run.
+- 403 for non-members, 401 without token.
+
+E9 notes: a group whose cached set is `FALLBACK` is retried with the AI (at most once per minute) once a key is configured, so tables are upgraded automatically.
 
 ### E10 `GET /api/groups/{groupId}/connections` → 200 `ConnectionItem[]` (other 3 members only)
 
@@ -495,3 +504,19 @@ endpoint, request/response field, enum, matching language or saved backend value
 changes. Catalog IDs and known status/error codes are localized for display. Card
 text remains exactly as returned in the group's shared language; user-provided
 names, contacts and Mensa addresses are preserved.
+
+## 9. Buddy preview extension — user-approved (2026-10-29)
+
+E6 InvitePreview adds optional fields (existing fields and validity semantics unchanged):
+- mensaId?: string — resolved inviter Mensa ID, including the legacy default.
+- slotIds?: string[] — inviter availability IDs from the catalog.
+- inviterMatchStatus?: MatchStatus — WAITING or MATCHED.
+
+The current server always supplies these fields. valid still means unused, including
+when the inviter has already matched; the UI explains MATCHED and offers solo signup.
+These fields are public to holders of the single-use invite URL. No languages, category,
+contacts or tokens are added. E2 still requires an explicit complete RegistrationRequest:
+the buddy UI inherits campus/mensaId, asks for a subset of preview slotIds and passes
+inviteCode. Existing compatibility checks and race responses remain unchanged; the
+backend does not silently override submitted preferences. E7 removes the link for
+future matching and preserves existing group assignments.

@@ -13,6 +13,7 @@ interface MockState {
   groups: Record<string, GroupResponse>; choices: Choice[];
   invites: Record<string, { inviterId: string; usedById: string | null }>;
   pairs: [string, string][];
+  cardRounds?: Record<string, number>;
 }
 const STORE = 'lunch2.mock.v1';
 const emptyState = (): MockState => ({ participants: {}, tokens: {}, groups: {}, choices: [], invites: {}, pairs: [] });
@@ -195,7 +196,8 @@ export async function mockRequest<T>(path: string, options: RequestOptions = {})
     const invite = state.invites[code];
     if (!invite) fail(404, 'INVITE_INVALID', 'This invitation could not be found.');
     const inviter = state.participants[invite.inviterId];
-    output = { code, inviterDisplayName: inviter.displayName, campus: inviter.campus, valid: !invite.usedById };
+    output = { code, inviterDisplayName: inviter.displayName, campus: inviter.campus, valid: !invite.usedById,
+      mensaId: mensaOf(inviter), slotIds: inviter.slotIds, inviterMatchStatus: inviter.matchStatus };
   } else if (path === '/me/friend/unlink') { state.pairs = state.pairs.filter(pair => !pair.includes(id)); output = me(state, id); }
   else if (path === '/admin/seed') {
     // Seed once; never overwrite live registrations or invalidate return links.
@@ -220,7 +222,12 @@ export async function mockRequest<T>(path: string, options: RequestOptions = {})
       const language = group.commonLanguages.includes('en') ? 'en' : group.commonLanguages[0];
       const banks: Readonly<Record<string, readonly string[]>> = translatedQuestions;
       const questions = language === 'en' ? classicQuestions : banks[language] ?? classicQuestions;
-      output = { groupId, language, source: 'FALLBACK', cards: questions.slice(0, 5).map((text, i) => ({ id: `c${i + 1}`, text, topic: 'generic' })) } satisfies CardsResponse;
+      // Mock mode has no AI: "refresh" rotates to the next five classic questions.
+      const rounds = (state.cardRounds ??= {});
+      const round = target === 'refresh' ? (rounds[groupId] = (rounds[groupId] ?? 0) + 1) : rounds[groupId] ?? 0;
+      const start = (round * 5) % Math.max(1, questions.length);
+      const picked = [...questions.slice(start), ...questions.slice(0, start)].slice(0, 5);
+      output = { groupId, language, source: 'FALLBACK', cards: picked.map((text, i) => ({ id: `c${i + 1}`, text, topic: 'generic' })) } satisfies CardsResponse;
     }
     else if (sub === 'connections') {
       if (!target) output = group.members.filter(p => p.id !== id).map(p => connection(state, groupId, id, p.id));

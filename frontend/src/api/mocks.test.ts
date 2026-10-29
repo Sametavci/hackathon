@@ -89,17 +89,40 @@ describe('stateful demo API', () => {
     setToken(b.accessToken); const data = await mockRequest<GroupResponse>(`/groups/${group}`, auth);
     expect(data.members.find(p => p.id === a.me.id)).toMatchObject({ displayName: 'Former participant', interests: [] });
   });
-  it('preserves invitations for future integration: idempotency, preview, incompatibility and unlink', async () => {
+  it('supports invite idempotency, preview, incompatibility and unlink', async () => {
     const a = await signup('Lena'); setToken(a.accessToken);
     const invite = await mockRequest<InviteResponse>('/me/invite', { ...auth, method: 'POST' });
     expect(await mockRequest('/me/invite', { ...auth, method: 'POST' })).toEqual(invite);
-    expect(await mockRequest<InvitePreview>(`/invites/${invite.code}`)).toMatchObject({ valid: true, inviterDisplayName: 'Lena' });
+    expect(await mockRequest<InvitePreview>(`/invites/${invite.code}`)).toMatchObject({ valid: true, inviterDisplayName: 'Lena',
+      mensaId: a.me.mensaId, slotIds: a.me.slotIds, inviterMatchStatus: 'WAITING' });
     const b = await signup('Sam', { inviteCode: invite.code, campus: 'SCHWEINFURT' });
     expect(b.me.friend?.issue?.code).toBe('FRIEND_DIFFERENT_CAMPUS');
     await expect(signup('Again', { inviteCode: invite.code })).rejects.toMatchObject({ status: 409, code: 'INVITE_USED' });
     setToken(b.accessToken); await mockRequest('/me/friend/unlink', { ...auth, method: 'POST' });
     expect((await mockRequest<MeResponse>('/me', auth)).friend).toBeNull();
     setToken(a.accessToken); expect((await mockRequest<MeResponse>('/me', auth)).friend).toBeNull();
+  });
+  it('registers from a public buddy plan, matches together and unlinks without changing the group', async () => {
+    const a = await signup('Lena'); setToken(a.accessToken);
+    const invite = await mockRequest<InviteResponse>('/me/invite', { ...auth, method: 'POST' });
+    const preview = await mockRequest<InvitePreview>(`/invites/${invite.code}`);
+    const b = await signup('Buddy', { inviteCode: preview.code, campus: preview.campus,
+      mensaId: preview.mensaId, slotIds: preview.slotIds });
+    expect(b.me.friend).toMatchObject({ displayName: 'Lena', pairStatus: 'ACTIVE' });
+    await signup('Aiko', { category: 'INTERNATIONAL' });
+    await signup('Omar', { category: 'INTERNATIONAL' });
+    const result = await mockRequest<MatchRunResponse>('/admin/match', admin);
+    expect(result.groupsCreated).toHaveLength(1);
+    setToken(a.accessToken);
+    const groupId = (await mockRequest<MeResponse>('/me', auth)).groupId;
+    setToken(b.accessToken);
+    expect((await mockRequest<MeResponse>('/me', auth)).groupId).toBe(groupId);
+    expect(await mockRequest<InvitePreview>(`/invites/${invite.code}`)).toMatchObject({ valid: false, inviterMatchStatus: 'MATCHED' });
+    await mockRequest('/me/friend/unlink', { ...auth, method: 'POST' });
+    for (const token of [a.accessToken, b.accessToken]) {
+      setToken(token);
+      expect(await mockRequest<MeResponse>('/me', auth)).toMatchObject({ friend: null, groupId, matchStatus: 'MATCHED' });
+    }
   });
   it('does not split an active friend pair to complete a group', async () => {
     const a = await signup('Lena'); setToken(a.accessToken);

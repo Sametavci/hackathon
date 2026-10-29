@@ -20,10 +20,10 @@ function PlayContent({ groupId, gameId }: { groupId: string; gameId?: string }) 
   const game = gameCatalog.find(entry => entry.id === gameId);
   const Game = game?.component;
   return <div className="space-y-6 pt-3">
-    {!gameId ? <GameHub groupId={groupId} /> : Game ? <>
+    {!gameId ? <GameHub basePath={`${base}/play`} /> : Game ? <>
       <Link className="inline-flex min-h-11 items-center text-sm underline" to={`${base}/play`}>← {t('games.backToHub')}</Link>
       <p className="rounded-2xl bg-brand-soft p-4 text-sm leading-relaxed">{t('games.rules')}</p>
-      <Game key={`${groupId}-${gameId}`} groupId={groupId} />
+      <Game key={`${groupId}-${gameId}`} groupId={groupId} players={group.data.members.map(member => member.displayName)} />
     </> : <>
       <p role="status">{t('games.notAvailable')}</p>
       <Link className={buttonClasses} to={`${base}/play`}>{t('games.backToHub')}</Link>

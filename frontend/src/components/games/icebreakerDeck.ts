@@ -26,3 +26,10 @@ export function shuffleDeck<T>(cards: readonly T[], random: () => number = Math.
   }
   return shuffled;
 }
+
+/** The server's interest-based questions come first (shuffled), then the classics (shuffled). */
+export function interestFirstDeck(response: CardsResponse, random: () => number = Math.random): QuestionCard[] {
+  const deck = buildIcebreakerDeck(response);
+  const own = new Set(response.cards.map(card => card.id));
+  return [...shuffleDeck(deck.filter(card => own.has(card.id)), random), ...shuffleDeck(deck.filter(card => !own.has(card.id)), random)];
+}

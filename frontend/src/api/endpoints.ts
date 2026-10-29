@@ -14,6 +14,7 @@ export const getInvite = (code: string) => call<InvitePreview>(`/invites/${segme
 export const unlinkFriend = () => call<MeResponse>('/me/friend/unlink', { ...participant, method: 'POST' });
 export const getGroup = (id: string) => call<GroupResponse>(`/groups/${segment(id)}`, participant);
 export const getCards = (id: string) => call<CardsResponse>(`/groups/${segment(id)}/cards`, participant);
+export const refreshCards = (id: string) => call<CardsResponse>(`/groups/${segment(id)}/cards/refresh`, { ...participant, method: 'POST' });
 export const getConnections = (groupId: string) => call<ConnectionItem[]>(connectionsPath(groupId), participant);
 export const setConnection = (groupId: string, id: string, choice: ConnectChoice) => call<ConnectionItem>(`${connectionsPath(groupId)}/${segment(id)}`, { ...participant, method: 'PUT', body: { choice } });
 export const shareContact = (groupId: string, id: string, contact: string) => call<ConnectionItem>(`${connectionsPath(groupId)}/${segment(id)}/contact`, { ...participant, method: 'PUT', body: { contact } });
