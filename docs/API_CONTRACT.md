@@ -269,6 +269,16 @@ Setting `NO` withdraws: also deletes my shared contact for that person. 409 `NOT
 }
 ```
 
+### A3 `POST /api/admin/reset` → 204 No Content
+
+Requires `X-Admin-Key`; no request body is required. Calls `DataAdmin.wipeAll()` to delete all
+participants, groups (including cached cards), friend pairs, invites, connection choices and shared contacts.
+Previously issued participant tokens no longer authenticate after their participant records are deleted.
+
+Success returns **204 No Content with an empty response body**, not a JSON object. Clients must not
+attempt to parse JSON for this response. Resetting an already-empty store also returns 204.
+Missing or invalid admin keys return 401 `UNAUTHORIZED` using the standard error envelope and do not modify data.
+
 ### A4 `GET /api/admin/stats` → 200 (optional)
 
 ```json
