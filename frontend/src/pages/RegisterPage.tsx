@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
-import { getMeta, registerParticipant } from '../api/endpoints';
+import { getInvite, getMeta, registerParticipant } from '../api/endpoints';
 import { getToken, setToken } from '../api/session';
 import type { Category, Campus, FieldError, RegistrationRequest } from '../api/types';
 import { validateRegistration } from '../api/validation';
@@ -21,6 +21,9 @@ const hints: Partial<Record<number, MessageKey>> = { 1: 'register.categoryHint',
 export default function RegisterPage() {
   const meta = useResource('meta', getMeta);
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const inviteCode = params.get('invite');
+  const invite = useResource(`invite:${inviteCode}`, () => getInvite(inviteCode!), !!inviteCode);
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [category, setCategory] = useState<Category | ''>('');
@@ -40,6 +43,10 @@ export default function RegisterPage() {
   const errorHeading = useRef<HTMLDivElement>(null);
   const pending = useRef(false);
   useEffect(() => { heading.current?.focus({ preventScroll: true }); }, [step]);
+  // A friend's invite pre-selects their campus; the pair must share campus, Mensa and a slot.
+  const invitedCampus = invite.data?.valid ? invite.data.campus : null;
+  useEffect(() => { if (invitedCampus) setCampus(current => current || invitedCampus); }, [invitedCampus]);
+  function dropInvite() { setParams({}, { replace: true }); setError(null); setErrors([]); }
   const toggle = (values: string[], value: string, set: (next: string[]) => void) => {
     set(values.includes(value) ? values.filter(v => v !== value) : [...values, value]); setErrors([]);
   };
@@ -47,7 +54,7 @@ export default function RegisterPage() {
   function clearSchedule() { if (slots.length) setScheduleChanged(true); setSlots([]); setDay(''); }
   function chooseCampus(value: Campus) { if (campus !== value) { setCampus(value); setMensaId(''); clearSchedule(); } setErrors([]); }
   function chooseMensa(value: string) { if (mensaId !== value) { setMensaId(value); clearSchedule(); } setErrors([]); }
-  const input: RegistrationRequest = { displayName: name.trim(), category: category as Category, campus: campus as Campus, mensaId, languages, interests, slotIds: slots, studyField: studyField || null, inviteCode: null, consent };
+  const input: RegistrationRequest = { displayName: name.trim(), category: category as Category, campus: campus as Campus, mensaId, languages, interests, slotIds: slots, studyField: studyField || null, inviteCode: invite.data?.valid ? inviteCode : null, consent };
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!meta.data || pending.current) return;
@@ -87,6 +94,8 @@ export default function RegisterPage() {
   return <div className="space-y-5 pt-3">
     <div className="flex items-center justify-between text-xs font-semibold text-ink-muted"><span>{t('app.name')} · THWS</span><span>{t('register.step')} {step + 1} {t('register.of')} {registrationSteps.length}</span></div>
     <div role="progressbar" aria-label={t('register.title')} aria-valuemin={0} aria-valuemax={registrationSteps.length} aria-valuenow={step + 1} className="h-2 overflow-hidden rounded-full bg-brand-soft"><div className="h-full rounded-full bg-brand transition-all duration-300 motion-reduce:transition-none" style={{ width: `${(step + 1) / registrationSteps.length * 100}%` }} /></div>
+    {invite.data?.valid && <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-brand-soft p-3 text-sm"><p>🤝 {t('register.inviteBanner')} <strong>{invite.data.inviterDisplayName}</strong>. {t('join.sameChoices')}</p><button type="button" onClick={dropInvite} className="min-h-11 text-sm font-semibold underline">{t('register.dropInvite')}</button></div>}
+    {error instanceof ApiError && error.code.startsWith('INVITE_') && <Button variant="secondary" className="w-full" onClick={dropInvite}>{t('register.dropInvite')}</Button>}
     <form onSubmit={submit} noValidate className="space-y-5" aria-busy={busy}>
       <section key={step} className="wizard-enter space-y-5" aria-labelledby="step-title" aria-describedby={hints[step] ? 'step-hint' : undefined}>
         <div className="space-y-3"><span aria-hidden="true" className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-accent text-2xl">{['📍', '👋', '💬', '✨', '🎓', '🍽️', '🗓️', '☺', '✓'][step]}</span><h1 id="step-title" ref={heading} tabIndex={-1} className="text-3xl focus:outline-none">{t(titles[step])}</h1>{hints[step] && <p id="step-hint" className="text-sm leading-relaxed text-ink-muted">{t(hints[step]!)}</p>}</div>

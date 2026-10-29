@@ -31,7 +31,7 @@ Legend: **M** = must-have, **O** = optional. Est. = minutes incl. agent + verifi
 | HACK-303 | Register page (+ invite code), Landing, Restore page | Dev 3 | 40 | 302 | pages/Register, Landing, Restore; components/Chip… | M |
 | HACK-305 | Me page: waiting/matched states, friend status + unlink, delete data | Dev 3 | 25 | 302 | pages/MePage.tsx | M |
 | HACK-306 | Group reveal page with flip animation | Dev 3 | 40 | 302 | pages/GroupPage.tsx, components/MemberCard.tsx | M |
-| HACK-304 | Bring-a-friend share sheet (QR, share, copy) + Join page | Dev 3 | 25 | 302 | components/QrShare.tsx, pages/JoinPage.tsx | M |
+| HACK-304 | Bring-a-friend share sheet (QR, share, copy) + Join page | Dev 3 | 25 | 302 | components/BuddyCard.tsx, pages/JoinPage.tsx (✅ done) | M |
 | HACK-307 | Conversation cards component (swipe + buttons) | Dev 3 | 25 | 306 | components/ConversationCards.tsx | M |
 | HACK-309 | Privacy page, a11y + mobile polish pass | Dev 3 | 20 | 303–307 | pages/PrivacyPage.tsx, styles | M (polish part O) |
 

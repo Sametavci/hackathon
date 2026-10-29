@@ -1,6 +1,6 @@
 # Lunch² demo — solo registration first
 
-The first frontend release demonstrates register → wait → admin match → group → conversation cards → mutual connect. Friend invitations, QR sharing and friend management are deferred. Invite routes and API functions remain in place; registration sends `inviteCode: null`. The full “Bring a Friend. Meet Two.” scenario is not complete in this release. Dev 1 should align TASKS/SPEC and the backend team's priorities with this staged delivery.
+The frontend demonstrates register → bring a friend (invite QR/link → friend joins via `#/join/<code>`) → wait → admin match → group (friend marked, "signed up together") → conversation cards → mutual connect. Incompatible pairs (different campus/Mensa, no shared slot or language) show the reason and a “Match us separately” button.
 
 ## Frontend with mocks
 
@@ -18,7 +18,7 @@ Mock data persists in localStorage and is shared by same-origin tabs. Tabs also 
 
 ## Real backend integration
 
-Dev 1 supplies E1–E4 and E10–E13; Dev 2 supplies E8–E9 and A1–A4. E5–E7 are reserved for the deferred friend flow. The frozen API contract remains the integration source of truth.
+Dev 1 supplies E1–E4 and E10–E13; Dev 2 supplies E8–E9 and A1–A4. E5–E7 power the friend flow (My lunch → Bring a friend, Join page, registration with `?invite=`). The frozen API contract remains the integration source of truth.
 
 Set `VITE_USE_MOCKS=false` in `frontend/.env.development.local`, start Quarkus with `cd backend && ./mvnw quarkus:dev`, and run Vite in another terminal. Vite proxies `/api` to port 8080. Check `curl -s http://localhost:8080/api/ping` returns `{"ok":true}`. API errors never silently fall back to mocks.
 

@@ -44,7 +44,7 @@ No load balancer, NAT, database or domain. Cost: the instance is free-tier eligi
 ```
 brew install awscli && aws configure          # once: access key of an IAM user with admin rights
 ./scripts/deploy.sh                            # build + secrets in SSM + cdk bootstrap/deploy, prints http://<IP>
-ANTHROPIC_API_KEY=sk-... ./scripts/deploy.sh   # same, with AI conversation cards
+GEMINI_API_KEY=... ./scripts/deploy.sh        # same, with Gemini AI conversation cards
 ./scripts/destroy.sh                           # delete the stack when the hackathon is over
 cd infra && npm install && npm test           # offline tests of the CDK stack and the scripts (no AWS needed)
 ```
