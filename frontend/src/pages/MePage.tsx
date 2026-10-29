@@ -30,6 +30,7 @@ function MeContent() {
     {me.matchStatus === 'WAITING' ? <section className="rounded-2xl bg-brand-soft px-4 py-3">
       <div className="flex items-center justify-between gap-3"><p className="text-sm font-medium">{t('me.waiting')}</p><button type="button" aria-label={t('common.refresh')} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-brand hover:bg-white/70" onClick={profile.reload}><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M20 7v5h-5M4 17v-5h5M5.2 8a7.5 7.5 0 0 1 12.3-3L20 8M4 16l2.5 3A7.5 7.5 0 0 0 18.8 16" strokeLinecap="round" strokeLinejoin="round" /></svg></button></div>
       {me.waitingReason && me.waitingReason.code !== 'WAITING_FOR_NEXT_ROUND' && <details className="mt-1"><summary className="flex min-h-11 cursor-pointer items-center text-xs text-ink-muted">{t('me.statusDetails')} +</summary><p className="pb-2 text-sm leading-relaxed text-ink-muted">{reasonMessage(me.waitingReason.code)}</p></details>}
+      <Link className="inline-flex min-h-11 items-center text-sm font-semibold text-brand underline" to="/games">{t('games.try')} ↗</Link>
     </section> : me.groupId && <Link className={`${buttonClasses} w-full`} to={`/group/${me.groupId}`}>{t('me.reveal')} ↗</Link>}
     <section className="space-y-4 rounded-2xl border border-line p-4">
       {!!catalog.error && <ErrorBanner error={catalog.error} onRetry={catalog.reload} />}

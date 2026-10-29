@@ -4,6 +4,7 @@ import de.thws.lunch2.auth.Authenticated;
 import de.thws.lunch2.auth.CurrentParticipant;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -25,5 +26,11 @@ public class CardsResource {
     @GET
     public CardsResponse get(@PathParam("groupId") String groupId) {
         return cards.get(groupId, current.id());
+    }
+
+    @POST
+    @Path("/refresh")
+    public CardsResponse refresh(@PathParam("groupId") String groupId) {
+        return cards.refresh(groupId, current.id());
     }
 }

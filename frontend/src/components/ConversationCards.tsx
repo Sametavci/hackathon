@@ -1,8 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
-import { getCards } from '../api/endpoints';
+import { getCards, refreshCards } from '../api/endpoints';
 import { useResource } from '../hooks/useResource';
 import { useI18n } from '../i18n';
-import { buildIcebreakerDeck, shuffleDeck } from './games/icebreakerDeck';
+import { interestFirstDeck } from './games/icebreakerDeck';
+import { catalogLabel } from '../i18n/presentation';
 import type { CardsResponse } from '../api/types';
 import Button from './Button';
 import ErrorBanner from './ErrorBanner';
@@ -13,13 +14,24 @@ export default function ConversationCards({ groupId }: { groupId: string }) {
   const [index, setIndex] = useState(0);
   const [finished, setFinished] = useState(false);
   const [shuffled, setShuffled] = useState<CardsResponse['cards'] | null>(null);
+  const [fresh, setFresh] = useState<CardsResponse | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<unknown>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
-  const initialDeck = useMemo(() => cards.data ? shuffleDeck(buildIcebreakerDeck(cards.data)) : [], [cards.data]);
+  const response = fresh ?? cards.data;
+  const initialDeck = useMemo(() => response ? interestFirstDeck(response) : [], [response]);
   const deck = shuffled ?? initialDeck;
   const activeIndex = Math.min(index, Math.max(0, deck.length - 1));
 
+  async function newQuestions() {
+    setRefreshing(true); setRefreshError(null);
+    try { setFresh(await refreshCards(groupId)); setShuffled(null); setIndex(0); setFinished(false); }
+    catch (error) { setRefreshError(error); }
+    finally { setRefreshing(false); }
+  }
+
   function shuffle() {
-    setShuffled(shuffleDeck(deck));
+    if (response) setShuffled(interestFirstDeck(response));
     setIndex(0);
     setFinished(false);
     start.current = null;
@@ -39,6 +51,7 @@ export default function ConversationCards({ groupId }: { groupId: string }) {
           <h2>{t('games.finished')}</h2>
           <p className="text-sm leading-relaxed">{t('games.finishedBody')}</p>
           <Button className="w-full" onClick={shuffle}>{t('games.replay')}</Button>
+          <Button className="w-full" variant="secondary" disabled={refreshing} onClick={() => void newQuestions()}>{t(refreshing ? 'cards.refreshing' : 'cards.refresh')}</Button>
         </div> : <>
           <div className="relative min-h-64 touch-pan-y rounded-2xl border border-line bg-brand-soft p-6"
             onPointerDown={event => { start.current = { x: event.clientX, y: event.clientY }; }}
@@ -52,9 +65,14 @@ export default function ConversationCards({ groupId }: { groupId: string }) {
                 setIndex(previous => Math.max(0, Math.min(deck.length - 1, previous + (delta < 0 ? 1 : -1))));
               }
             }}>
-            <span className="inline-block rounded-full bg-white/80 px-3 py-1 text-xs font-bold">
-              {t(cards.data.source === 'AI' ? 'games.mixed' : 'cards.classic')}
-            </span>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-block rounded-full bg-white/80 px-3 py-1 text-xs font-bold">
+                {t(response?.source === 'AI' ? 'games.mixed' : 'cards.classic')}
+              </span>
+              {deck[activeIndex].topic !== 'generic' && <span className="inline-block rounded-full bg-ink px-3 py-1 text-xs font-bold text-white">
+                ✨ {catalogLabel('interest', deck[activeIndex].topic)}
+              </span>}
+            </div>
             <p className="mt-8 break-words text-2xl font-semibold leading-snug" aria-live="polite" aria-atomic="true">{deck[activeIndex].text}</p>
           </div>
           <p className="text-center text-sm font-semibold" role="status">{t('cards.progress')} {activeIndex + 1} {t('cards.of')} {deck.length}</p>
@@ -66,7 +84,9 @@ export default function ConversationCards({ groupId }: { groupId: string }) {
             <Button variant="secondary" onClick={next}>{t('games.skip')}</Button>
             <Button variant="secondary" onClick={shuffle}>{t('games.shuffle')}</Button>
           </div>
+          <Button className="w-full" variant="secondary" disabled={refreshing} onClick={() => void newQuestions()}>{t(refreshing ? 'cards.refreshing' : 'cards.refresh')}</Button>
         </>}
+      {!!refreshError && <ErrorBanner error={refreshError} />}
     </section>
   );
 }

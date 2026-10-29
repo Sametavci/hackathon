@@ -20,6 +20,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class GeminiCardGenerator implements ConversationCardGenerator {
+    private static final String GENERIC = "generic";
     private final ObjectMapper mapper;
     private final CatalogService catalog;
     private final String apiKey;
@@ -53,17 +54,37 @@ public class GeminiCardGenerator implements ConversationCardGenerator {
     }
 
     @Override
-    public List<String> generate(List<String> interestIds, String languageCode) throws Exception {
+    public boolean available() {
+        return !apiKey.isBlank();
+    }
+
+    @Override
+    public List<GeneratedCard> generate(List<String> interestIds, String languageCode, List<String> avoid) throws Exception {
         if (apiKey.isBlank()) return List.of();
         if (!catalog.hasLanguage(languageCode)) throw new IllegalArgumentException("Unknown card language");
-        List<String> labels = interestIds.stream().distinct().map(catalog::interestLabel).toList();
-        String prompt = "Write 5 friendly, inclusive lunch icebreaker questions for 4 university students "
-                + "(mix of locals and internationals in Germany) who share these interests: "
-                + mapper.writeValueAsString(labels) + ". Language: " + languageCode
-                + ". No questions about religion, politics, health, money, family status, appearance or origin-shaming. "
-                + "Max 120 characters each. Reply with a JSON array of strings only.";
-        String payload = mapper.writeValueAsString(Map.of("contents", List.of(Map.of("role", "user", "parts",
-                List.of(Map.of("text", prompt)))), "generationConfig", Map.of("maxOutputTokens", 400)));
+        List<String> topics = new ArrayList<>(interestIds.stream().distinct().filter(catalog::hasInterest).toList());
+        StringBuilder interests = new StringBuilder();
+        for (String id : topics) interests.append(interests.isEmpty() ? "" : ", ").append(id).append(" (").append(catalog.interestLabel(id)).append(')');
+        topics.add(GENERIC);
+        String prompt = "You write icebreaker questions for a lunch table of 4 university students in Germany: "
+                + "two have lived in Germany for a while, two are new to the country. "
+                + "Their interests, most shared first: " + (interests.isEmpty() ? "none given" : interests) + ". "
+                + "Write 5 different, friendly, open questions in " + catalog.languageLabel(languageCode) + " (" + languageCode + "). "
+                + "Cover as many different interests as possible and set each question's topic to the interest ID it is about; "
+                + "at most one question may use the topic \"generic\". Questions must be easy and fun for everyone to answer "
+                + "and invite stories, tips or opinions. Never ask about religion, politics, health, money, relationships, "
+                + "family status, appearance, or anything that makes someone's origin feel strange. Max 120 characters each."
+                + (avoid.isEmpty() ? "" : " Do not repeat or rephrase any of these questions: "
+                        + mapper.writeValueAsString(avoid.stream().limit(20).toList()) + ".");
+        // JSON mode plus a schema keeps the reply parseable; no thinking budget so the output is never truncated.
+        Map<String, Object> schema = Map.of("type", "ARRAY", "items", Map.of("type", "OBJECT",
+                "properties", Map.of("text", Map.of("type", "STRING"), "topic", Map.of("type", "STRING", "enum", topics)),
+                "required", List.of("text", "topic")));
+        String payload = mapper.writeValueAsString(Map.of(
+                "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", prompt)))),
+                "generationConfig", Map.of("maxOutputTokens", 1024, "temperature", 1.0,
+                        "responseMimeType", "application/json", "responseSchema", schema,
+                        "thinkingConfig", Map.of("thinkingBudget", 0))));
         HttpRequest request = HttpRequest.newBuilder(endpoint).timeout(timeout)
                 .header("x-goog-api-key", apiKey).header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(payload)).build();
@@ -75,7 +96,7 @@ public class GeminiCardGenerator implements ConversationCardGenerator {
             pending.cancel(true);
             throw exception;
         }
-        if (response.statusCode() != 200) throw new IOException("Gemini request failed");
+        if (response.statusCode() != 200) throw new IOException("Gemini request failed with HTTP " + response.statusCode());
         var candidate = mapper.readTree(response.body()).path("candidates").path(0);
         if (!"STOP".equals(candidate.path("finishReason").asText())) throw new IOException("Incomplete Gemini response");
         StringBuilder text = new StringBuilder();
@@ -84,11 +105,12 @@ public class GeminiCardGenerator implements ConversationCardGenerator {
         }
         var array = mapper.readTree(text.toString());
         if (array == null || !array.isArray() || array.size() < 3 || array.size() > 6) throw new IOException("Invalid Gemini card array");
-        List<String> questions = new ArrayList<>();
+        List<GeneratedCard> cards = new ArrayList<>();
         for (var value : array) {
-            if (!value.isTextual()) throw new IOException("Invalid Gemini question");
-            questions.add(value.textValue());
+            if (!value.path("text").isTextual()) throw new IOException("Invalid Gemini question");
+            String topic = value.path("topic").asText(GENERIC);
+            cards.add(new GeneratedCard(value.path("text").textValue(), topics.contains(topic) ? topic : GENERIC));
         }
-        return List.copyOf(questions);
+        return List.copyOf(cards);
     }
 }

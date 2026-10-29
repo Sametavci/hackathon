@@ -5,7 +5,7 @@ import { getMeta, registerParticipant } from '../api/endpoints';
 import { getToken, setToken } from '../api/session';
 import type { Category, Campus, FieldError, RegistrationRequest } from '../api/types';
 import { validateRegistration } from '../api/validation';
-import { createAutoAdvance, errorsForStep, isAutomaticStep, registrationSteps, stepForField } from '../api/registrationFlow';
+import { createAutoAdvance, errorsForStep, isAutomaticStep, registrationSteps, stepForField, toggleDaySlot } from '../api/registrationFlow';
 import Button, { buttonClasses } from '../components/Button';
 import Chip from '../components/Chip';
 import Card from '../components/Card';
@@ -122,9 +122,9 @@ export default function RegisterPage() {
         {step === 5 && <div className="grid gap-3">{!mensas.length && <div className="space-y-3"><p role="alert">{t('register.noMensas')}</p><Button variant="secondary" onClick={meta.reload}>{t('common.retry')}</Button></div>}{mensas.map(m => <Chip key={m.id} selected={mensaId === m.id} onClick={() => chooseMensa(m.id)} className="min-h-20 items-start text-left"><span className="space-y-1"><span className="block text-base">{m.name}</span><span className="block text-xs font-normal text-ink-muted">{m.address}</span></span></Chip>)}</div>}
         {step === 6 && <div className="space-y-4">
           {scheduleChanged && <p role="status" className="text-xs text-ink-muted">{t('register.scheduleChanged')}</p>}
-          <p className="text-sm text-ink-muted">{mensa?.name}</p>
+          <div className="space-y-1"><p className="text-sm text-ink-muted">{mensa?.name}</p><p className="text-xs text-ink-muted">{t('register.oneDayHint')}</p></div>
           <DateCarousel dates={dates} value={selectedDay} selectedDates={selectedDates} onChange={setDay} />
-          <fieldset><legend className="sr-only">{t('register.time')}</legend><div className="grid grid-cols-2 gap-2">{available.filter(s => s.date === selectedDay).map(s => <Chip key={s.id} selected={slots.includes(s.id)} disabled={slots.length >= 15 && !slots.includes(s.id)} onClick={() => { toggle(slots, s.id, setSlots); setScheduleChanged(false); }} aria-label={formatSlot(s)}>{s.start}–{s.end}</Chip>)}</div>{!available.some(s => s.date === selectedDay) && <p className="py-3 text-sm text-ink-muted" role="status">{t('register.noSlots')}</p>}</fieldset>
+          <fieldset><legend className="sr-only">{t('register.time')}</legend><div className="grid grid-cols-2 gap-2">{available.filter(s => s.date === selectedDay).map(s => <Chip key={s.id} selected={slots.includes(s.id)} disabled={slots.filter(id => id.slice(0, 10) === s.date).length >= 15 && !slots.includes(s.id)} onClick={() => { setSlots(current => toggleDaySlot(current, s.id)); setErrors([]); setScheduleChanged(false); }} aria-label={formatSlot(s)}>{s.start}–{s.end}</Chip>)}</div>{!available.some(s => s.date === selectedDay) && <p className="py-3 text-sm text-ink-muted" role="status">{t('register.noSlots')}</p>}</fieldset>
           <p role="status" className="text-xs tabular-nums text-ink-muted">{slots.length}/15 {t('register.selected')} · {selectedDates.length} {t(selectedDates.length === 1 ? 'register.daySingle' : 'register.daysCount')}</p>
         </div>}
         {step === 7 && <div><label htmlFor="displayName" className="sr-only">{t('register.nickname')}</label><input id="displayName" name="displayName" autoComplete="nickname" enterKeyHint="next" maxLength={30} placeholder={t('register.nickname')} value={name} onChange={e => { setName(e.target.value); setErrors([]); }} className="field" aria-invalid={errors.some(e => e.field === 'displayName')} /></div>}
