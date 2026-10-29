@@ -147,3 +147,16 @@ component identity and form state, set HTML `lang`, and persist `lunch2.locale`.
 and reduced-motion state; the table uses a 24-second CSS rotation with counter-
 rotating faces. Timers and listeners are cleaned up on unmount. No new dependencies
 or backend changes are needed.
+
+## Buddy frontend integration (2026-10-29)
+
+InviteService builds a public plan preview from the inviter's current saved registration.
+Only Mensa ID, slot IDs and match status are added; tokens, contacts, category and
+languages stay private. JoinPage validates this plan against meta. RegisterPage loads
+it again from the invite code on direct navigation/reload, skips campus/Mensa steps,
+limits available times to inviter slots and submits the actual inviteCode. It rechecks
+the invite before submitting; backend registration remains authoritative for races.
+A missing/inconsistent preview blocks inherited registration rather than guessing.
+BuddyFlow contains plan validation and wizard steps. QrShare uses existing qrcode.react,
+Web Share and clipboard (manual selection fallback). MePage reads current buddy state
+with Refresh, and unlink reloads it; no polling or existing-user linking endpoint.

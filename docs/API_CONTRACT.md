@@ -495,3 +495,19 @@ endpoint, request/response field, enum, matching language or saved backend value
 changes. Catalog IDs and known status/error codes are localized for display. Card
 text remains exactly as returned in the group's shared language; user-provided
 names, contacts and Mensa addresses are preserved.
+
+## 9. Buddy preview extension — user-approved (2026-10-29)
+
+E6 InvitePreview adds optional fields (existing fields and validity semantics unchanged):
+- mensaId?: string — resolved inviter Mensa ID, including the legacy default.
+- slotIds?: string[] — inviter availability IDs from the catalog.
+- inviterMatchStatus?: MatchStatus — WAITING or MATCHED.
+
+The current server always supplies these fields. valid still means unused, including
+when the inviter has already matched; the UI explains MATCHED and offers solo signup.
+These fields are public to holders of the single-use invite URL. No languages, category,
+contacts or tokens are added. E2 still requires an explicit complete RegistrationRequest:
+the buddy UI inherits campus/mensaId, asks for a subset of preview slotIds and passes
+inviteCode. Existing compatibility checks and race responses remain unchanged; the
+backend does not silently override submitted preferences. E7 removes the link for
+future matching and preserves existing group assignments.

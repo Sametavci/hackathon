@@ -69,9 +69,30 @@ class InviteResourceTest {
         assertEquals(invite.getMap(""), me(first).getMap("pendingInvite"));
         var preview = given().when().get("/api/invites/{code}", code)
                 .then().statusCode(200).contentType(ContentType.JSON).extract().jsonPath();
-        assertEquals(Map.of("code", code, "inviterDisplayName", "Lena", "campus", "WUERZBURG", "valid", true),
+        assertEquals(Map.of("code", code, "inviterDisplayName", "Lena", "campus", "WUERZBURG", "valid", true,
+                        "mensaId", me(first).getString("mensaId"), "slotIds", me(first).getList("slotIds"),
+                        "inviterMatchStatus", "WAITING"),
                 preview.getMap(""));
         assertEquals(first.id(), invites.findByCode(code).orElseThrow().inviterId());
+    }
+
+    @Test
+    void previewUsesExplicitMensaAndSlotsForBuddyRegistration() {
+        var catalog = given().when().get("/api/meta").then().statusCode(200).extract().jsonPath();
+        List<Map<String, Object>> mensas = catalog.getList("mensas");
+        var mensa = mensas.stream().filter(m -> "WUERZBURG".equals(m.get("campus")))
+                .filter(m -> !Boolean.TRUE.equals(m.get("defaultForCampus")) && !((List<?>) m.get("slotIds")).isEmpty())
+                .findFirst().orElseThrow();
+        String mensaId = (String) mensa.get("id");
+        List<?> chosen = ((List<?>) mensa.get("slotIds")).subList(0, 1);
+        Identity first = register("Lena", Map.of("mensaId", mensaId, "slotIds", chosen));
+        String code = invite(first).getString("code");
+        var preview = given().when().get("/api/invites/{code}", code).then().statusCode(200)
+                .body("mensaId", is(mensaId)).body("slotIds", is(chosen)).extract().jsonPath();
+        Identity buddy = register("Buddy", Map.of("inviteCode", code, "campus", preview.getString("campus"),
+                "mensaId", preview.getString("mensaId"), "slotIds", preview.getList("slotIds")));
+        assertEquals("ACTIVE", me(buddy).getString("friend.pairStatus"));
+        assertEquals(mensaId, me(buddy).getString("mensaId"));
     }
 
     @Test
@@ -139,6 +160,8 @@ class InviteResourceTest {
         String code = invite(first).getString("code");
         Participant participant = participants.findById(first.id()).orElseThrow();
         participants.save(state(participant, MatchStatus.MATCHED, "existing-group", null));
+        given().when().get("/api/invites/{code}", code).then().statusCode(200)
+                .body("valid", is(true)).body("inviterMatchStatus", is("MATCHED"));
         Identity second = register("Sam", Map.of("inviteCode", code, "campus", "SCHWEINFURT",
                 "languages", List.of("tr"), "slotIds", List.of(slots.slots().get(1).id())));
         assertEquals("INVITER_ALREADY_MATCHED", me(second).getString("friend.issue.code"));

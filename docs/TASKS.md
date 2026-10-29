@@ -414,3 +414,25 @@ Connect and Admin strings; underlying behavior and the API contract stay intact.
 Verification: frontend lint, Vitest and build; locale priority/key parity/date tests;
 headline timer pause/resume/cleanup tests; mobile/desktop browser checks in both
 languages, including form-state preservation.
+
+## HACK-310 — Buddy invite API and frontend (2026-10-29)
+
+User explicitly authorized coordinated Dev 1 invite API/tests/docs and Dev 3 frontend
+implementation of the agreed buddy plan. Scope: additive optional preview Mensa/slots/
+match status, share/QR/copy, join preview, inherited campus/Mensa, buddy time confirmation,
+inviteCode submission, profile buddy status/unlink, localized errors, mocks and tests.
+No dependency or existing-registration linking endpoint; preserve frozen existing fields.
+Acceptance: invite -> buddy registration -> ACTIVE pair -> same valid 2+2 group; never
+auto-select availability; used/invalid/matched invites and existing sessions explained;
+unlink visible on both profiles after Refresh, existing groups unchanged. Documentation
+in SPEC, ARCHITECTURE, API_CONTRACT and README updated in the same change.
+Verify: frontend build/lint/Vitest, backend Maven verify, browser walkthrough.
+
+HACK-310 verification: frontend build and lint passed; 85 Vitest tests passed with
+NODE_OPTIONS=--no-experimental-global-navigator (existing English assertions otherwise
+inherit the Windows German navigator locale). Backend mvnw.cmd -q verify passed:
+174 tests, zero failures/errors/skips, including 13 invite tests. JAVA_HOME was set to
+the installed JDK; verification ran outside sandbox after local socket/file operations
+were denied inside it. Browser walkthrough remains unverified: in-app browser could
+not reach localhost; Windows Computer Use stopped because it could not determine
+the current browser URL confidently. Manual mobile/phone walkthrough remains.

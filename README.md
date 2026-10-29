@@ -117,3 +117,16 @@ Language changes preserve your current registration, session and loaded pages.
 Conversation questions keep the group's shared language.
 The centered landing animates headlines and a four-person table. Use its pause
 control to stop motion; reduced-motion settings and hidden tabs suspend animation.
+
+## Bring a friend
+
+Register, then open My lunch -> Bring a friend -> Create invite. Share or copy the link
+or scan its QR from another phone/browser session. The buddy sees your Mensa and times,
+inherits campus/Mensa, confirms the times that fit, and supplies their own personal
+answers. If no times fit, they can register alone. Refresh My lunch to see the linked
+buddy; admin matching places ACTIVE buddies in the same valid 2+2 group or keeps them
+waiting. Match us separately removes the link for future rounds, keeping existing groups.
+Invites do not hold your place before your friend registers. Already matched inviters,
+used/invalid links and already registered visitors receive explanations. Existing users
+cannot link two registrations. Set LUNCH2_PUBLIC_BASE_URL to the frontend URL reachable
+from your friend's phone; localhost links work only on the same computer.
