@@ -13,13 +13,14 @@ import DateCarousel from '../components/DateCarousel';
 import ErrorBanner from '../components/ErrorBanner';
 import LoadState from '../components/LoadState';
 import { useResource } from '../hooks/useResource';
-import { t, type MessageKey } from '../i18n/en';
+import { catalogLabel, fieldMessage, formatDate as dateLabel, formatSlot } from '../i18n/presentation';
+import { useI18n, type MessageKey } from '../i18n';
 
-const dateLabel = (date: string) => new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Europe/Berlin' }).format(new Date(`${date}T12:00:00Z`));
 const titles: MessageKey[] = ['register.campus', 'register.category', 'register.languages', 'register.interests', 'register.study', 'register.mensa', 'register.slots', 'register.name', 'register.review'];
 const summaryLabels: MessageKey[] = ['register.summaryCampus', 'register.summaryCategory', 'register.summaryLanguages', 'register.summaryInterests', 'register.summaryStudy', 'register.summaryMensa', 'register.summaryWhen', 'register.nickname'];
 
 export default function RegisterPage() {
+  const { t } = useI18n();
   const meta = useResource('meta', getMeta);
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -93,9 +94,9 @@ export default function RegisterPage() {
   const summary = [
     catalog.campuses.find(c => c.id === campus)?.label,
     category ? t(category === 'DOMESTIC' ? 'register.domestic' : 'register.international') : '',
-    catalog.languages.filter(l => languages.includes(l.code)).map(l => l.label).join(', '),
-    catalog.interests.filter(i => interests.includes(i.id)).map(i => `${i.emoji} ${i.label}`).join(', '),
-    catalog.studyFields.find(f => f.id === studyField)?.label ?? t('register.skipped'),
+    catalog.languages.filter(l => languages.includes(l.code)).map(l => catalogLabel('language', l.code, l.label)).join(', '),
+    catalog.interests.filter(i => interests.includes(i.id)).map(i => `${i.emoji} ${catalogLabel('interest', i.id, i.label)}`).join(', '),
+    studyField ? catalogLabel('study', studyField, catalog.studyFields.find(f => f.id === studyField)?.label) : t('register.skipped'),
     mensa ? `${mensa.name} · ${mensa.address}` : '',
     selectedSlots.map(s => `${dateLabel(s.date)} · ${s.start}–${s.end}`).join(' / '), name.trim(),
   ];
@@ -109,19 +110,19 @@ export default function RegisterPage() {
     <form onSubmit={submit} noValidate className="space-y-6" aria-busy={busy}>
       <section key={step} className="wizard-enter space-y-5" aria-labelledby="step-title">
         <h1 id="step-title" ref={heading} tabIndex={-1} className="text-3xl focus:outline-none">{t(titles[step])}</h1>
-        {(error || errors.length > 0) && <div ref={errorHeading} tabIndex={-1} className="rounded-2xl"><ErrorBanner error={error ?? new Error(errors.map(e => e.message).join(' '))} /></div>}
+        {(error || errors.length > 0) && <div ref={errorHeading} tabIndex={-1} className="rounded-2xl"><ErrorBanner error={error ?? new Error(errors.map(fieldMessage).join(' '))} /></div>}
         {step === 0 && <div className="grid gap-3">{catalog.campuses.map(c => <Chip key={c.id} selected={campus === c.id} onClick={() => chooseCampus(c.id)} className="min-h-24 text-left text-xl">{c.label}</Chip>)}</div>}
         {step === 1 && <div className="grid gap-3">{(['DOMESTIC', 'INTERNATIONAL'] as const).map(value => <Chip key={value} selected={category === value} onClick={() => selectAndAdvance(() => setCategory(value))} className="min-h-24 text-left text-base">{t(value === 'DOMESTIC' ? 'register.domestic' : 'register.international')}</Chip>)}</div>}
-        {step === 2 && <div className="flex flex-wrap gap-2">{catalog.languages.map(l => <Chip key={l.code} selected={languages.includes(l.code)} disabled={languages.length >= 4 && !languages.includes(l.code)} onClick={() => toggle(languages, l.code, setLanguages)}>{l.label}</Chip>)}</div>}
-        {step === 3 && <div className="flex flex-wrap gap-2">{catalog.interests.map(i => <Chip key={i.id} selected={interests.includes(i.id)} disabled={interests.length >= 5 && !interests.includes(i.id)} onClick={() => toggle(interests, i.id, setInterests)}><span aria-hidden="true">{i.emoji}</span>{i.label}</Chip>)}</div>}
+        {step === 2 && <div className="flex flex-wrap gap-2">{catalog.languages.map(l => <Chip key={l.code} selected={languages.includes(l.code)} disabled={languages.length >= 4 && !languages.includes(l.code)} onClick={() => toggle(languages, l.code, setLanguages)}>{catalogLabel('language', l.code, l.label)}</Chip>)}</div>}
+        {step === 3 && <div className="flex flex-wrap gap-2">{catalog.interests.map(i => <Chip key={i.id} selected={interests.includes(i.id)} disabled={interests.length >= 5 && !interests.includes(i.id)} onClick={() => toggle(interests, i.id, setInterests)}><span aria-hidden="true">{i.emoji}</span>{catalogLabel('interest', i.id, i.label)}</Chip>)}</div>}
         {(step === 2 || step === 3) && <p role="status" className="text-xs tabular-nums text-ink-muted">{step === 2 ? languages.length : interests.length}/{step === 2 ? 4 : 5} {t('register.selected')}</p>}
-        {step === 4 && <div className="grid gap-2"><Chip selected={!studyField} onClick={() => selectAndAdvance(() => setStudyField(''))}>{t('register.studyNone')}</Chip>{catalog.studyFields.map(f => <Chip key={f.id} selected={studyField === f.id} onClick={() => selectAndAdvance(() => setStudyField(f.id))} className="text-left">{f.label}</Chip>)}</div>}
+        {step === 4 && <div className="grid gap-2"><Chip selected={!studyField} onClick={() => selectAndAdvance(() => setStudyField(''))}>{t('register.studyNone')}</Chip>{catalog.studyFields.map(f => <Chip key={f.id} selected={studyField === f.id} onClick={() => selectAndAdvance(() => setStudyField(f.id))} className="text-left">{catalogLabel('study', f.id, f.label)}</Chip>)}</div>}
         {step === 5 && <div className="grid gap-3">{!mensas.length && <div className="space-y-3"><p role="alert">{t('register.noMensas')}</p><Button variant="secondary" onClick={meta.reload}>{t('common.retry')}</Button></div>}{mensas.map(m => <Chip key={m.id} selected={mensaId === m.id} onClick={() => chooseMensa(m.id)} className="min-h-20 items-start text-left"><span className="space-y-1"><span className="block text-base">{m.name}</span><span className="block text-xs font-normal text-ink-muted">{m.address}</span></span></Chip>)}</div>}
         {step === 6 && <div className="space-y-4">
           {scheduleChanged && <p role="status" className="text-xs text-ink-muted">{t('register.scheduleChanged')}</p>}
           <p className="text-sm text-ink-muted">{mensa?.name}</p>
           <DateCarousel dates={dates} value={selectedDay} selectedDates={selectedDates} onChange={setDay} />
-          <fieldset><legend className="sr-only">{t('register.time')}</legend><div className="grid grid-cols-2 gap-2">{available.filter(s => s.date === selectedDay).map(s => <Chip key={s.id} selected={slots.includes(s.id)} disabled={slots.length >= 15 && !slots.includes(s.id)} onClick={() => { toggle(slots, s.id, setSlots); setScheduleChanged(false); }} aria-label={s.label}>{s.start}–{s.end}</Chip>)}</div>{!available.length && <p>{t('register.noSlots')}</p>}</fieldset>
+          <fieldset><legend className="sr-only">{t('register.time')}</legend><div className="grid grid-cols-2 gap-2">{available.filter(s => s.date === selectedDay).map(s => <Chip key={s.id} selected={slots.includes(s.id)} disabled={slots.length >= 15 && !slots.includes(s.id)} onClick={() => { toggle(slots, s.id, setSlots); setScheduleChanged(false); }} aria-label={formatSlot(s)}>{s.start}–{s.end}</Chip>)}</div>{!available.length && <p>{t('register.noSlots')}</p>}</fieldset>
           <p role="status" className="text-xs tabular-nums text-ink-muted">{slots.length}/15 {t('register.selected')} · {selectedDates.length} {t(selectedDates.length === 1 ? 'register.daySingle' : 'register.daysCount')}</p>
         </div>}
         {step === 7 && <div><label htmlFor="displayName" className="sr-only">{t('register.nickname')}</label><input id="displayName" name="displayName" autoComplete="nickname" enterKeyHint="next" maxLength={30} placeholder={t('register.nickname')} value={name} onChange={e => { setName(e.target.value); setErrors([]); }} className="field" aria-invalid={errors.some(e => e.field === 'displayName')} /></div>}

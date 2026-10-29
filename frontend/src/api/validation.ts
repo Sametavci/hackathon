@@ -1,5 +1,5 @@
 import type { FieldError, MetaResponse, RegistrationRequest } from './types';
-import { t } from '../i18n/en';
+import { t } from '../i18n';
 export function validateRegistration(input: RegistrationRequest, meta: MetaResponse): FieldError[] {
   const errors: FieldError[] = [];
   const add = (field: string, message: string) => errors.push({ field, message });
