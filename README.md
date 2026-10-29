@@ -167,3 +167,8 @@ the original private return link before completing the new registration: complet
 switches this browser and its other tabs to the new participant. Failed/cancelled
 registration keeps the original session. Existing users cannot link two registrations. Set LUNCH2_PUBLIC_BASE_URL to the frontend URL reachable
 from your friend's phone; localhost links work only on the same computer.
+
+
+### HACK-312 — My lunch refresh (2026-10-29)
+
+My lunch now uses a compact profile header, a green matching-status panel, Mensa/address and time cards, and a linked-buddy summary. Buddy management and private return-link details remain available. Table-game promotion has been removed from My lunch.

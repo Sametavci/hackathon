@@ -5,6 +5,9 @@ export const de = {
   "ui.admin": "Admin",
   "ui.rules": "Spielregeln",
 
+  "me.readyTitle": "Dein Platz am neuen Tisch.",
+  "me.manageFriend": "Buddy-Verbindung verwalten",
+  "me.account": "Dein Konto",
   "me.statusShort": "Angemeldet. Wir finden deinen Tisch.",
   "me.statusDetails": "Details zur Zuordnung",
   "admin.more": "Weitere Optionen",

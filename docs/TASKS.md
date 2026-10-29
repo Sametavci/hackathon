@@ -519,3 +519,15 @@ Regression checks cover route preservation, name-first navigation, identity choi
 rendering and same-browser registration producing distinct participant IDs/tokens.
 Frontend build/lint passed; 89 Vitest tests passed with the English test environment
 (NODE_OPTIONS=--no-experimental-global-navigator). No backend code changed.
+
+
+### HACK-312 — My lunch refresh (2026-10-29)
+
+User-authorized Dev 3 MePage and EN/DE presentation changes plus required Dev 1 documentation updates. Remove the games promotion from My lunch and modernize the page using the established palette and components. Preserve refresh, group reveal, invites, buddy unlink, private return link and delete confirmation. Verify frontend lint, tests and production build.
+
+HACK-312 verification: frontend lint passed, Vitest passed 19 files / 120 tests,
+and the production build passed (100 modules). Headless Chrome checked EN/DE at
+375, 390 and 1280 px with no horizontal overflow and no games entry on My lunch.
+Mock-only checks passed refresh, delete confirmation/cancel, linked buddy display,
+unlink, invite QR/link creation and matched group navigation availability. The
+packaged app on localhost:8080 serves the new assets; API ping returns {"ok":true}.

@@ -160,3 +160,8 @@ The previous session stays active until successful registration; its private ret
 link is available to save before switching. Existing registrations cannot be linked
 through this flow; joining as another person creates a distinct participant. Both profiles display buddy status and can unlink;
 unlink does not change an existing group. Matching is still an admin action.
+
+
+### HACK-312 — My lunch refresh (2026-10-29)
+
+My lunch no longer displays the table-games section or link. A green status panel makes waiting/matched state and manual refresh visible; matched participants can open their group. The plan shows campus, Mensa/address and the first two selected times. Further choices and buddy unlink controls expand on demand; invite, return-link and confirmed deletion remain accessible. EN/DE and mobile layouts are preserved.

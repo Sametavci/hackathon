@@ -213,3 +213,8 @@ sequence (name -> category -> languages -> interests -> study -> slots -> consen
 POST /participants remains unauthenticated and creates a new participant. Only its
 successful response replaces the active browser token; failed/cancelled forms leave
 the original session intact. The switch also affects other tabs sharing localStorage.
+
+
+### HACK-312 — My lunch refresh (2026-10-29)
+
+MePage composes existing Avatar, buttons, QrShare and ReturnLink with local semantic status, plan and buddy sections. Native details disclose secondary choices and unlink controls. All calls still use endpoints.ts; no polling, dependencies or backend changes. The games entry point is removed from this page.

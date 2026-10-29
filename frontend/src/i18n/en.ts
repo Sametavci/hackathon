@@ -3,6 +3,9 @@ export const en = {
   "ui.admin": "Admin",
   "ui.rules": "How to play",
 
+  "me.readyTitle": "A seat at a new table.",
+  "me.manageFriend": "Manage buddy link",
+  "me.account": "Your account",
   "me.statusShort": "Registered. Finding your table.",
   "me.statusDetails": "Matching details",
   "admin.more": "More options",

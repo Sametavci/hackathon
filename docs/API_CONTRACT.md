@@ -569,3 +569,8 @@ offers a different-person path using browser query parameter new=1 alongside
 invite=CODE; neither is an API field. A fresh nickname and the complete E2 request
 are required. E2 creates a distinct participant and returns its own token; the UI
 replaces the previous session only on success. No endpoint or DTO changes.
+
+
+### HACK-312 — My lunch refresh (2026-10-29)
+
+My lunch presentation update only: removes its table-games entry and reorganizes status, location, saved slots, buddy and account controls. Existing routes, game endpoints, DTOs, matching behavior and contact/privacy rules remain unchanged.
