@@ -22,7 +22,7 @@ Legend: **M** = must-have, **O** = optional. Est. = minutes incl. agent + verifi
 | HACK-204 | MatchService + `POST /api/admin/match` + `/reset` | Dev 2 | 30 | 201, 102, 103 | matching/MatchService, admin/AdminResource | M |
 | HACK-205 | `GET /api/groups/{id}` with membership check | Dev 2 | 20 | 204, 103 | group/ | M |
 | HACK-203 | Seed dataset + `POST /api/admin/seed` + `scripts/demo.sh` | Dev 2 | 30 | 204 | admin/SeedService, resources/seed/, scripts/ | M |
-| HACK-206 | Card service: fallback first, then Claude, cache in group | Dev 2 | 40 | 205 | cards/ | M (AI part degradable) |
+| HACK-206 | Card service: fallback first, then Gemini, cache in group | Dev 2 | 40 | 205 | cards/ | M (AI part degradable) |
 | HACK-202 | Matching edge-case test suite | Dev 2 | 35 | 201 | test/matching/ | M |
 | HACK-108 | Single-jar build (SPA in Quarkus) + tunnel demo run; optional Lightsail | Dev 2 | 35 | 101, 301 | scripts/build-all.sh, backend/src/main/docker/, docs/DEMO.md | M (tunnel) / O (AWS) |
 | HACK-208 | Admin page (seed/match/reset/stats, demo links) + stats endpoint | Dev 2 | 25 | 302, 204 | pages/AdminPage.tsx, admin/StatsService | O |
@@ -73,7 +73,7 @@ E10–E13 exactly per privacy rules in API_CONTRACT. Membership: caller and targ
 Only edits `pages/ConnectPage.tsx` (+ new `components/connect/*` if needed). Uses `endpoints.ts` functions. Per member: "I'd like to stay in touch" toggle, status chip, when MUTUAL a text field "What do you want to share? (e.g. Instagram, Discord)" + Share / Withdraw. Copy: "They'll only know if they choose you too."
 *AC:* works against mocks and real backend. *Verify:* `npm run build`, manual on 375px viewport.
 
-**HACK-110 – PRIVACY.md + README**: data inventory, purpose, legal basis assumption (consent, Art. 6(1)(a)), retention (prod: delete participant 30 days after last meetup or 90 days inactive; contacts deleted on withdraw), deletion (E4), processors (AWS eu-central-1, Anthropic – only interest IDs), and the production gap list (§J.4). README: 5-command local setup.
+**HACK-110 – PRIVACY.md + README**: data inventory, purpose, legal basis assumption (consent, Art. 6(1)(a)), retention (prod: delete participant 30 days after last meetup or 90 days inactive; contacts deleted on withdraw), deletion (E4), processors (AWS eu-central-1, Google Gemini – only interest labels and language), and the production gap list (§J.4). README: 5-command local setup.
 
 **HACK-201 – Matching engine (critical path)**
 Implement records of API_CONTRACT §4.4 and algorithm ARCHITECTURE §C.3 in plain Java. `GroupValidator.violations()` checks: size 4, exactly 2/2, same campus, all have slot, ∩languages ≠ ∅, no ID twice, friend of any member present. Core tests: happy-path 2+2; friend pair placed together; validator rejects a 3+1 group.
@@ -90,7 +90,8 @@ Load `WAITING` participants, map to `MatchCandidate` (friendId only if pair `ACT
 *AC:* fresh reset → seed → match yields exactly the planned groups and reasons (assert in a test). *Verify:* test + `./scripts/demo.sh`.
 
 **HACK-206 – Conversation cards**
-Step 1 (15 min, ship immediately): `FallbackCards` — ≥2 questions per interest + 8 generic, English + German, deterministic pick by `groupId` hash; E9 returns `FALLBACK`. Step 2: `ClaudeCardGenerator` — POST `https://api.anthropic.com/v1/messages` (headers `x-api-key`, `anthropic-version: 2023-06-01`), model from config, `max_tokens` 400, prompt: *"Write 5 friendly, inclusive lunch icebreaker questions for 4 university students (mix of locals and internationals in Germany) who share these interests: {labels}. Language: {lang}. No questions about religion, politics, health, money, family status, appearance or origin-shaming. Max 120 characters each. Reply with a JSON array of strings only."* Parse; validate 3–6 strings ≤140 chars; else fallback. Language = `en` if common else first common. Per-group `synchronized` to avoid double calls; persist `CardSet`.
+Step 1 (15 min, ship immediately): `FallbackCards` — ≥2 questions per interest + 8 generic, English + German, deterministic pick by `groupId` hash; E9 returns `FALLBACK`.
+Step 2 (provider changed to Gemini by user): `GeminiCardGenerator` — JDK HttpClient POST to `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`, `x-goog-api-key` header, model from config, `maxOutputTokens` 400. Send only catalog interest labels and a language code. Prompt for five friendly, inclusive lunch questions for university students; exclude religion, politics, health, money, family status, appearance and origin-shaming; request a JSON string array with questions of at most 120 characters. Validate 3–6 distinct nonblank strings ≤140 chars, normalize to five per API_CONTRACT §4.5; otherwise fallback. Overall timeout ≤8 seconds. Language = `en` if common else first common. Per-group `synchronized` to avoid double calls; persist `CardSet`.
 *AC:* no key → FALLBACK; key → AI; second call does not hit network (log line); network failure → FALLBACK within 8 s. *Verify:* unit test with a stub generator that throws.
 
 **HACK-202 – Edge-case tests**: insufficient participants (3) → no group + reasons; 4D+0I → none, `NOT_ENOUGH_INTERNATIONAL`; 6D+2I → exactly 1 group; incompatible slots; no shared language; friend pair different campus / no common slot; friend pair never split even when splitting would form a group; no participant in two groups across slots; determinism; previously-met penalty changes choice.
@@ -330,7 +331,7 @@ then waiting reason codes. GroupValidator must independently re-check every hard
 Write the 3 core tests from the ticket together with the engine.
 If Developer 1's persistence (HACK-102) is not merged when you reach HACK-204, code against the
 interfaces in API_CONTRACT §4.2 with a test-local in-memory fake.
-HACK-206: ship the deterministic fallback first and merge it, then add the Claude generator using JDK
+HACK-206: ship the deterministic fallback first and merge it, then add the Gemini generator using JDK
 HttpClient (no new dependency). Send ONLY interest labels and a language code to the AI.
 Run `mvn -q verify` before reporting. Start with HACK-201 now.
 ```
