@@ -289,6 +289,14 @@ Missing or invalid admin keys return 401 `UNAUTHORIZED` using the standard error
 
 ### A4 `GET /api/admin/stats` → 200 (optional)
 
+Requires `X-Admin-Key`. Returns aggregate counts only, without names, IDs, tokens or contacts.
+`registrations` and `byCampus` count current participant records and always include all enum keys, even at zero.
+`matched`/`waiting` count current participant statuses. `matchRate` is matched/registrations, rounded to two
+decimal places (0 for an empty store). `groups` counts saved groups; `friendPairs` counts ACTIVE pairs.
+`mutualConnections` counts each unordered pair once per group when both current members chose YES;
+sharing contact details is not required. Unlinked friend pairs, deleted participants and one-sided/NO
+connection choices do not contribute to the respective counts.
+
 ```json
 { "registrations": { "DOMESTIC": 9, "INTERNATIONAL": 8 }, "byCampus": { "WUERZBURG": 11, "SCHWEINFURT": 6 },
   "matched": 12, "waiting": 5, "matchRate": 0.71, "groups": 3, "friendPairs": 3, "mutualConnections": 2 }
