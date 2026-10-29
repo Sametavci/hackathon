@@ -150,3 +150,20 @@ main entrance five minutes before lunch, then find your table together. EN/DE
 arrival and lunch times stay visible. Mock matching numbers groups Table 1, 2, 3
 until reset; real groups show “Your table” until Dev 2 adds server numbering.
 These are group labels, not physical table reservations.
+
+## Bring a friend
+
+Register, then open My lunch -> Bring a friend -> Create invite. Share or copy the link
+or scan its QR from another phone/browser session. The buddy sees your Mensa and times,
+inherits campus/Mensa, confirms the times that fit, and supplies their own personal
+answers. If no times fit, they can register alone. Refresh My lunch to see the linked
+buddy; admin matching places ACTIVE buddies in the same valid 2+2 group or keeps them
+waiting. Match us separately removes the link for future rounds, keeping existing groups.
+Invites do not hold your place before your friend registers. Already matched inviters,
+used/invalid links receive explanations. If the browser already has a registration,
+choose "Join as a different person" to create a new buddy with their own name, or
+return to the existing lunch. The buddy form asks for the new nickname first. Save
+the original private return link before completing the new registration: completion
+switches this browser and its other tabs to the new participant. Failed/cancelled
+registration keeps the original session. Existing users cannot link two registrations. Set LUNCH2_PUBLIC_BASE_URL to the frontend URL reachable
+from your friend's phone; localhost links work only on the same computer.

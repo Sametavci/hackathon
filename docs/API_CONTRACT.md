@@ -546,3 +546,26 @@ location strings append ` · Lunch² Table N`, numbered across stored groups fro
 until reset. The frontend localizes that suffix and uses “Your table” for legacy
 locations. Real matching locations remain unchanged pending the Dev 2 follow-up;
 client-local numbers are never invented for real participants.
+
+## 9. Buddy preview extension — user-approved (2026-10-29)
+
+E6 InvitePreview adds optional fields (existing fields and validity semantics unchanged):
+- mensaId?: string — resolved inviter Mensa ID, including the legacy default.
+- slotIds?: string[] — inviter availability IDs from the catalog.
+- inviterMatchStatus?: MatchStatus — WAITING or MATCHED.
+
+The current server always supplies these fields. valid still means unused, including
+when the inviter has already matched; the UI explains MATCHED and offers solo signup.
+These fields are public to holders of the single-use invite URL. No languages, category,
+contacts or tokens are added. E2 still requires an explicit complete RegistrationRequest:
+the buddy UI inherits campus/mensaId, asks for a subset of preview slotIds and passes
+inviteCode. Existing compatibility checks and race responses remain unchanged; the
+backend does not silently override submitted preferences. E7 removes the link for
+future matching and preserves existing group assignments.
+
+Buddy session correction (frontend only): invite links do not authenticate as the
+inviter. An existing browser token must not bypass invited registration. The UI
+offers a different-person path using browser query parameter new=1 alongside
+invite=CODE; neither is an API field. A fresh nickname and the complete E2 request
+are required. E2 creates a distinct participant and returns its own token; the UI
+replaces the previous session only on success. No endpoint or DTO changes.

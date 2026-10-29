@@ -485,3 +485,37 @@ Verification completed: `npm run lint` passed; `npm test` passed 17 files / 113 
 `npm run build` passed (96 modules). Headless Chrome checked EN/DE at 375 px:
 four seats, all four tap reveals and no horizontal overflow. Screenshot reviewed.
 Existing game SSR tests emit React Router useLayoutEffect warnings, without failures.
+
+## HACK-310 — Buddy invite API and frontend (2026-10-29)
+
+User explicitly authorized coordinated Dev 1 invite API/tests/docs and Dev 3 frontend
+implementation of the agreed buddy plan. Scope: additive optional preview Mensa/slots/
+match status, share/QR/copy, join preview, inherited campus/Mensa, buddy time confirmation,
+inviteCode submission, profile buddy status/unlink, localized errors, mocks and tests.
+No dependency or existing-registration linking endpoint; preserve frozen existing fields.
+Acceptance: invite -> buddy registration -> ACTIVE pair -> same valid 2+2 group; never
+auto-select availability; used/invalid/matched invites and existing sessions explained;
+unlink visible on both profiles after Refresh, existing groups unchanged. Documentation
+in SPEC, ARCHITECTURE, API_CONTRACT and README updated in the same change.
+Verify: frontend build/lint/Vitest, backend Maven verify, browser walkthrough.
+
+HACK-310 verification: frontend build and lint passed; 85 Vitest tests passed with
+NODE_OPTIONS=--no-experimental-global-navigator (existing English assertions otherwise
+inherit the Windows German navigator locale). Backend mvnw.cmd -q verify passed:
+174 tests, zero failures/errors/skips, including 13 invite tests. JAVA_HOME was set to
+the installed JDK; verification ran outside sandbox after local socket/file operations
+were denied inside it. Browser walkthrough remains unverified: in-app browser could
+not reach localhost; Windows Computer Use stopped because it could not determine
+the current browser URL confidently. Manual mobile/phone walkthrough remains.
+
+HACK-310 follow-up — same-browser Join identity fix (2026-10-29): the previous
+getToken guard hid the invite and only offered the saved participant's lunch.
+Valid invitations now keep their preview and offer an explicit different-person
+registration with the invite preserved, including direct register links. Buddy
+registration starts with an empty nickname field. Explicit wizard navigation
+handles the reordered steps; previous credentials stay active until successful
+registration and a return-link control supports saving the old identity.
+Regression checks cover route preservation, name-first navigation, identity choice
+rendering and same-browser registration producing distinct participant IDs/tokens.
+Frontend build/lint passed; 89 Vitest tests passed with the English test environment
+(NODE_OPTIONS=--no-experimental-global-navigator). No backend code changed.

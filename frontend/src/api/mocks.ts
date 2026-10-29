@@ -196,7 +196,8 @@ export async function mockRequest<T>(path: string, options: RequestOptions = {})
     const invite = state.invites[code];
     if (!invite) fail(404, 'INVITE_INVALID', 'This invitation could not be found.');
     const inviter = state.participants[invite.inviterId];
-    output = { code, inviterDisplayName: inviter.displayName, campus: inviter.campus, valid: !invite.usedById };
+    output = { code, inviterDisplayName: inviter.displayName, campus: inviter.campus, valid: !invite.usedById,
+      mensaId: mensaOf(inviter), slotIds: inviter.slotIds, inviterMatchStatus: inviter.matchStatus };
   } else if (path === '/me/friend/unlink') { state.pairs = state.pairs.filter(pair => !pair.includes(id)); output = me(state, id); }
   else if (path === '/admin/seed') {
     // Seed once; never overwrite live registrations or invalidate return links.

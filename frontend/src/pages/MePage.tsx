@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { deleteMe, getMe, getMeta } from '../api/endpoints';
+import { deleteMe, getMe, getMeta, unlinkFriend } from '../api/endpoints';
 import { clearSession } from '../api/session';
 import { ApiError } from '../api/client';
 import Button, { buttonClasses } from '../components/Button';
 import Card from '../components/Card';
 import ErrorBanner from '../components/ErrorBanner';
 import LoadState from '../components/LoadState';
+import QrShare from '../components/QrShare';
 import ReturnLink from '../components/ReturnLink';
 import Avatar from '../components/Avatar';
 import SessionGate from '../components/SessionGate';
@@ -22,6 +23,10 @@ function MeContent() {
   const [error, setError] = useState<unknown>(null);
   const navigate = useNavigate();
   async function remove() { setBusy(true); setError(null); try { await deleteMe(); clearSession(); navigate('/', { replace: true }); } catch (e) { if (e instanceof ApiError && e.status === 401) navigate('/', { replace: true }); else setError(e); } finally { setBusy(false); } }
+  async function unlink() {
+    setBusy(true); setError(null);
+    try { await unlinkFriend(); profile.reload(); } catch (e) { setError(e); } finally { setBusy(false); }
+  }
   if (!profile.data) return <LoadState {...profile} />;
   const me = profile.data;
   const meta = catalog.data;
@@ -42,7 +47,8 @@ function MeContent() {
         </div>
       </details>
     </section>
-    {me.friend && <section className="rounded-2xl border border-line p-4"><p className="text-xs text-ink-muted">{t('me.friend')}</p><div className="mt-3 flex items-center gap-3"><Avatar name={me.friend.displayName} small /><p className="text-sm font-semibold">{me.friend.displayName}</p></div>{me.friend.issue && <p className="mt-2 text-sm text-ink-muted">{reasonMessage(me.friend.issue.code)}</p>}</section>}
+    {me.friend && <Card className="space-y-2"><h2>{t('me.friend')}</h2><p>{me.friend.displayName}</p><p className="text-sm text-ink-muted">{me.friend.issue ? reasonMessage(me.friend.issue.code) : t(me.matchStatus === 'MATCHED' ? 'buddy.together' : 'buddy.waiting')}</p><p className="text-sm text-ink-muted">{t('buddy.unlinkInfo')}</p><Button variant="secondary" disabled={busy} onClick={() => void unlink()}>{t(busy ? 'common.saving' : 'buddy.unlink')}</Button></Card>}
+    {!me.friend && me.matchStatus === 'WAITING' && <QrShare key={me.pendingInvite?.code ?? 'new'} pendingInvite={me.pendingInvite} />}
     <ReturnLink />
     {!!error && <ErrorBanner error={error} />}
     {confirm ? <Card role="region" aria-label={t('me.deleteTitle')} className="space-y-4 !rounded-2xl !border-red-200 !shadow-none"><h2 className="text-base">{t('me.deleteTitle')}</h2><p className="text-sm leading-relaxed text-ink-muted">{t('me.deleteBody')}</p><div className="flex flex-wrap gap-2"><Button variant="danger" disabled={busy} onClick={() => void remove()}>{t(busy ? 'common.saving' : 'me.deleteConfirm')}</Button><Button variant="secondary" disabled={busy} onClick={() => setConfirm(false)}>{t('common.cancel')}</Button></div></Card> : <button type="button" className="min-h-11 text-xs text-ink-muted underline underline-offset-4" onClick={() => setConfirm(true)}>{t('me.delete')}</button>}

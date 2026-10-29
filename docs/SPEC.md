@@ -144,3 +144,19 @@ table together. Keep lunch date/time and full venue/address visible in EN/DE.
 Mock matching assigns Table 1, 2, 3 across stored groups; reset restarts numbering.
 Existing unnumbered real groups display “Your table”. Server numbering is a Dev 2
 follow-up. Table numbers are group labels, not physical reservations.
+
+## Buddy registration extension (2026-10-29)
+
+From My lunch, waiting unpaired participants create an idempotent single-use invite,
+share/copy its URL or show its QR. The join page previews inviter name, campus, Mensa
+and availability. Buddy registration inherits campus/Mensa and asks the buddy to select
+a nonempty subset of the inviter's slots; personal category, languages, interests,
+nickname and consent remain their own answers. No times fit -> explicit solo registration.
+Used/invalid invites and already matched inviters receive explanations and a solo
+registration option. With a saved browser session, valid invites still show the plan
+and offer "Join as a different person" alongside the existing My lunch link. Buddy
+registration asks for a new nickname first, then the remaining personal answers.
+The previous session stays active until successful registration; its private return
+link is available to save before switching. Existing registrations cannot be linked
+through this flow; joining as another person creates a distinct participant. Both profiles display buddy status and can unlink;
+unlink does not change an existing group. Matching is still an admin action.
