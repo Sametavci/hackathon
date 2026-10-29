@@ -85,11 +85,12 @@ No load balancer, NAT, database or domain. Cost: the instance is free-tier eligi
 ```
 brew install awscli && aws configure          # once: access key of an IAM user with admin rights
 ./scripts/deploy.sh                            # build + secrets in SSM + cdk bootstrap/deploy, prints http://<IP>
-ANTHROPIC_API_KEY=sk-... ./scripts/deploy.sh   # same, with AI conversation cards
+GEMINI_API_KEY=... ./scripts/deploy.sh       # stores the key in SSM for AI conversation cards
 ./scripts/destroy.sh                           # delete the stack when the hackathon is over
 cd infra && npm install && npm test           # offline tests of the CDK stack and the scripts (no AWS needed)
 ```
 - Region defaults to `eu-central-1` (Frankfurt); override with `AWS_REGION=...`.
+- Gemini credentials use the SSM SecureString `/lunch2/gemini-api-key`; EC2 reads it into `GEMINI_API_KEY` at first boot. Updating SSM alone does not update a running service: refresh `/opt/lunch2/env` and restart `lunch2`. The local `.env` is not automatically sourced by the deploy script.
 - Each deploy **replaces the instance** (same IP): stored data is wiped, so run admin seed again afterwards.
 - HTTP only (a bare IP can't get a TLS certificate): fine for a demo with fictional data, not for real users. Browsers block `navigator.clipboard`/`navigator.share` on plain HTTP except on localhost, so the UI must offer a visible link fallback.
 - Debug shell without SSH: the `ShellCommand` output (needs `brew install --cask session-manager-plugin`), then `sudo journalctl -u lunch2`.

@@ -144,4 +144,21 @@ describe('deploy.sh', () => {
     const r = run(root, 'deploy.sh', bin, { AWS_REGION: 'eu-west-1' });
     assert.match(r.out, /region eu-west-1/);
   });
+
+  it('stores Gemini credentials as a SecureString without printing the value', () => {
+    const { root, bin, log } = deployProject(false);
+    fake(join(root, 'scripts'), 'build-all.sh', 'exit 0');
+    fake(bin, 'aws', `[ "$1 $2" = "sts get-caller-identity" ] && { echo 123456789012; exit 0; }; echo "$*" >> ${log}`);
+    fake(bin, 'npm', 'exit 0');
+    fake(bin, 'npx', 'exit 0');
+    fake(bin, 'node', 'echo http://example.test');
+    fake(bin, 'curl', 'exit 0');
+    mkdirSync(join(root, 'infra'));
+    const r = run(root, 'deploy.sh', bin, { ALLOW_DIRTY: '1', GEMINI_API_KEY: 'test-gemini-secret' });
+    assert.equal(r.code, 0, r.out);
+    const calls = readFileSync(log, 'utf8');
+    assert.match(calls, /ssm put-parameter --name \/lunch2\/gemini-api-key --type SecureString --value test-gemini-secret --overwrite/);
+    assert.doesNotMatch(calls, /anthropic/);
+    assert.doesNotMatch(r.out, /test-gemini-secret/);
+  });
 });

@@ -87,7 +87,9 @@ describe('Lunch2Stack', () => {
   it('reads secrets from SSM at boot and never traces them into the console log', () => {
     const script = userData(template);
     assert.match(script, /aws ssm get-parameter --region \$REGION --name \/lunch2\/admin-key --with-decryption/);
-    assert.match(script, /--name \/lunch2\/anthropic-api-key/);
+    assert.match(script, /--name \/lunch2\/gemini-api-key/);
+    assert.match(script, /GEMINI_API_KEY=\$AI_KEY/);
+    assert.doesNotMatch(script, /ANTHROPIC_API_KEY|anthropic-api-key/);
     assert.doesNotMatch(script, /set -[a-z]*x/, 'set -x would print secrets to the EC2 console output');
     assert.doesNotMatch(script, /sk-ant-/, 'no API key literal in the template');
     assert.match(script, /chmod 600 \/opt\/lunch2\/env/);

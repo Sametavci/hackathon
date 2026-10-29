@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-command AWS deploy: build -> store secrets in SSM -> cdk bootstrap/deploy -> wait for the app.
 # Needs: AWS CLI v2 with credentials (aws configure), JDK 21, Node 20+.
-# Optional env: AWS_REGION (default eu-central-1), ANTHROPIC_API_KEY, LUNCH2_ADMIN_KEY.
+# Optional env: AWS_REGION (default eu-central-1), GEMINI_API_KEY, LUNCH2_ADMIN_KEY.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export AWS_REGION="${AWS_REGION:-eu-central-1}"
@@ -25,8 +25,8 @@ if ! aws ssm get-parameter --name /lunch2/admin-key >/dev/null 2>&1 || [ -n "${L
   ADMIN_KEY="${LUNCH2_ADMIN_KEY:-$(openssl rand -hex 16)}"
   aws ssm put-parameter --name /lunch2/admin-key --type SecureString --value "$ADMIN_KEY" --overwrite >/dev/null
 fi
-if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
-  aws ssm put-parameter --name /lunch2/anthropic-api-key --type SecureString --value "$ANTHROPIC_API_KEY" --overwrite >/dev/null
+if [ -n "${GEMINI_API_KEY:-}" ]; then
+  aws ssm put-parameter --name /lunch2/gemini-api-key --type SecureString --value "$GEMINI_API_KEY" --overwrite >/dev/null
 fi
 
 echo "==> Deploying with CDK"
