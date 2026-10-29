@@ -381,4 +381,6 @@ export const de = {
   "games.common.thing": "Gemeinsamkeit {n}",
   "games.common.done": "Alle drei gefunden. Super!",
   "games.common.stuck": "Kommt ihr nicht weiter? Denkt an Essen, Musik, Orte, an denen ihr wart, Dinge, die ihr nicht mögt, oder wie ihr in den Tag startet.",
+  "cards.refresh": "Neue Fragen ✨",
+  "cards.refreshing": "Neue Fragen werden erstellt …",
 } satisfies Record<MessageKey, string>;

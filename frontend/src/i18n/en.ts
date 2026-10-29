@@ -268,6 +268,8 @@ export const en = {
   "games.common.thing": "Thing in common {n}",
   "games.common.done": "All three found. Nice work!",
   "games.common.stuck": "Stuck? Think about food, music, places you’ve been, things you can’t stand, or how you start your day.",
+  "cards.refresh": "New questions ✨",
+  "cards.refreshing": "Creating new questions…",
 } as const;
 export type MessageKey = keyof typeof en;
 

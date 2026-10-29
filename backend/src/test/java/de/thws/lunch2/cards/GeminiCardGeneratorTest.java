@@ -37,7 +37,7 @@ class GeminiCardGeneratorTest {
 
     @BeforeEach
     void startStub() throws Exception {
-        body.set(envelope("[\"One?\",\"Two?\",\"Three?\",\"Four?\",\"Five?\"]"));
+        body.set(envelope("[{\"text\":\"One?\",\"topic\":\"tech\"},{\"text\":\"Two?\",\"topic\":\"travel\"},{\"text\":\"Three?\",\"topic\":\"generic\"},{\"text\":\"Four?\",\"topic\":\"unknown\"},{\"text\":\"Five?\",\"topic\":\"tech\"}]"));
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         executor = Executors.newCachedThreadPool();
         server.setExecutor(executor);
@@ -66,25 +66,41 @@ class GeminiCardGeneratorTest {
     }
 
     @Test
-    void sendsOnlyLabelsAndLanguageWithKeyInHeaderAndParsesGeminiText() throws Exception {
-        List<String> questions = generator("test-key", Duration.ofSeconds(2)).generate(List.of("tech", "travel"), "en");
-        assertEquals(List.of("One?", "Two?", "Three?", "Four?", "Five?"), questions);
+    void sendsOnlyInterestsLanguageAndSeenQuestionsWithKeyInHeaderAndParsesTopics() throws Exception {
+        var cards = generator("test-key", Duration.ofSeconds(2)).generate(List.of("tech", "travel"), "en", List.of("Seen before?"));
+        assertEquals(List.of("One?", "Two?", "Three?", "Four?", "Five?"), cards.stream().map(ConversationCardGenerator.GeneratedCard::text).toList());
+        assertEquals(List.of("tech", "travel", "generic", "generic", "tech"), cards.stream().map(ConversationCardGenerator.GeneratedCard::topic).toList());
         assertEquals("test-key", header.get());
         var payload = mapper.readTree(request.get());
         assertEquals(Set.of("contents", "generationConfig"), mapper.convertValue(payload, Map.class).keySet());
-        assertEquals(400, payload.path("generationConfig").path("maxOutputTokens").intValue());
+        var config = payload.path("generationConfig");
+        assertEquals(1024, config.path("maxOutputTokens").intValue());
+        assertEquals("application/json", config.path("responseMimeType").textValue());
+        assertEquals(0, config.path("thinkingConfig").path("thinkingBudget").intValue());
+        assertEquals(List.of("tech", "travel", "generic"), mapper.convertValue(
+                config.path("responseSchema").path("items").path("properties").path("topic").path("enum"), List.class));
         String prompt = payload.path("contents").path(0).path("parts").path(0).path("text").textValue();
         assertTrue(prompt.contains("Technology"));
         assertTrue(prompt.contains("Travel"));
-        assertTrue(prompt.contains("Language: en"));
-        assertFalse(prompt.contains("\"tech\""));
+        assertTrue(prompt.contains("(en)"));
+        assertTrue(prompt.contains("Seen before?"));
         assertFalse(prompt.contains("WUERZBURG"));
         assertFalse(request.get().contains("test-key"));
     }
 
     @Test
+    void unknownInterestIdsAreNotSentAsTopics() throws Exception {
+        generator("k", Duration.ofSeconds(2)).generate(List.of("travel", "not-a-real-interest"), "en", List.of());
+        var topics = mapper.readTree(request.get()).path("generationConfig").path("responseSchema").path("items").path("properties").path("topic").path("enum");
+        assertEquals(List.of("travel", "generic"), mapper.convertValue(topics, List.class));
+    }
+
+    @Test
     void missingKeyMakesNoHttpRequest() throws Exception {
-        assertEquals(List.of(), generator("", Duration.ofSeconds(1)).generate(List.of("travel"), "en"));
+        var none = generator("", Duration.ofSeconds(1));
+        assertFalse(none.available());
+        assertEquals(List.of(), none.generate(List.of("travel"), "en", List.of()));
+        assertTrue(generator("k", Duration.ofSeconds(1)).available());
         assertEquals(0, count.get());
     }
 
@@ -93,16 +109,17 @@ class GeminiCardGeneratorTest {
         status = 429;
         body.set("secret provider error details");
         var error = assertThrows(java.io.IOException.class,
-                () -> generator("test", Duration.ofSeconds(2)).generate(List.of(), "en"));
+                () -> generator("test", Duration.ofSeconds(2)).generate(List.of(), "en", List.of()));
         assertFalse(error.getMessage().contains("secret"));
     }
 
     @Test
     void malformedBlockedTruncatedAndNonStringResponsesAreRejected() throws Exception {
         for (String invalid : List.of("not json", "{}", "{\"candidates\":[{\"finishReason\":\"MAX_TOKENS\"}]}",
-                envelope("[\"only one\"]"), envelope("[\"one\",2,\"three\"]"), envelope("```json\n[]\n```"))) {
+                envelope("[{\"text\":\"only one\",\"topic\":\"generic\"}]"), envelope("[\"plain\",\"strings\",\"rejected\"]"),
+                envelope("[{\"text\":1},{\"text\":\"b\"},{\"text\":\"c\"}]"), envelope("```json\n[]\n```"))) {
             body.set(invalid);
-            assertThrows(Exception.class, () -> generator("test", Duration.ofSeconds(2)).generate(List.of(), "en"));
+            assertThrows(Exception.class, () -> generator("test", Duration.ofSeconds(2)).generate(List.of(), "en", List.of()));
         }
     }
 
@@ -110,7 +127,7 @@ class GeminiCardGeneratorTest {
     void slowProviderIsCancelledWithinTheConfiguredOverallTimeout() {
         slow = true;
         long started = System.nanoTime();
-        assertThrows(Exception.class, () -> generator("test", Duration.ofMillis(150)).generate(List.of(), "en"));
+        assertThrows(Exception.class, () -> generator("test", Duration.ofMillis(150)).generate(List.of(), "en", List.of()));
         assertTrue(Duration.ofNanos(System.nanoTime() - started).toMillis() < 1500);
     }
 
