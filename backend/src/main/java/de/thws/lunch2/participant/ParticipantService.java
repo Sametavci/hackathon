@@ -26,17 +26,19 @@ public class ParticipantService {
     private final CatalogService catalogs;
     private final SlotService slots;
     private final InviteService invites;
+    private final MeService me;
     private final String publicBaseUrl;
 
     @Inject
     public ParticipantService(ParticipantRepository participants, TokenService tokens, CatalogService catalogs,
-                              SlotService slots, InviteService invites,
+                              SlotService slots, InviteService invites, MeService me,
                               @ConfigProperty(name = "lunch2.public-base-url") String publicBaseUrl) {
         this.participants = participants;
         this.tokens = tokens;
         this.catalogs = catalogs;
         this.slots = slots;
         this.invites = invites;
+        this.me = me;
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
     }
 
@@ -65,11 +67,7 @@ public class ParticipantService {
         participant = invites.attachIfPresent(participant, request.inviteCode());
         participants.save(participant);
         Log.info("Participant registered");
-        MeResponse me = new MeResponse(participant.id(), participant.displayName(), participant.category(),
-                participant.campus(), participant.languages(), participant.interests(), participant.slotIds(),
-                participant.studyField(), participant.matchStatus(), new MeResponse.Reason(participant.waitingReason(),
-                "Matching has not run since you registered."), null, null, null);
-        return new RegistrationResponse(token, publicBaseUrl + "/#/back?t=" + token, me);
+        return new RegistrationResponse(token, publicBaseUrl + "/#/back?t=" + token, me.toResponse(participant));
     }
 
     private static ApiException invalidField(String field, String message) {

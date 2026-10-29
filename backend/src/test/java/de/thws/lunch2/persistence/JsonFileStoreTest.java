@@ -22,13 +22,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -256,6 +260,54 @@ class JsonFileStoreTest {
 
     private Repositories open(Path file) {
         return new Repositories(new JsonFileStore(new ObjectMapper().findAndRegisterModules(), file.toString()));
+    }
+
+    @Test
+    void transientSnapshotReplacementDenialsAreRetried() {
+        Path file = directory.resolve("lunch2.json");
+        AtomicInteger attempts = new AtomicInteger();
+        var store = new JsonFileStore(new ObjectMapper().findAndRegisterModules(), file.toString(), (source, target) -> {
+            if (attempts.incrementAndGet() <= 2) {
+                throw new AccessDeniedException(source.toString());
+            }
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        });
+        var repositories = new Repositories(store);
+
+        repositories.participants().save(participant("a"));
+
+        assertTrue(attempts.get() > 1);
+        assertEquals(List.of(participant("a")), repositories.participants().findAll());
+        assertEquals(List.of(participant("a")), open(file).participants().findAll());
+    }
+
+    @Test
+    void persistentReplacementDenialIsBoundedAndPreservesPreviousState() throws IOException {
+        Path file = directory.resolve("lunch2.json");
+        AtomicInteger attempts = new AtomicInteger();
+        AtomicBoolean denied = new AtomicBoolean();
+        var store = new JsonFileStore(new ObjectMapper().findAndRegisterModules(), file.toString(), (source, target) -> {
+            attempts.incrementAndGet();
+            if (denied.get()) {
+                throw new AccessDeniedException(source.toString());
+            }
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        });
+        var repositories = new Repositories(store);
+        repositories.participants().save(participant("a"));
+        String before = Files.readString(file);
+        attempts.set(0);
+        denied.set(true);
+
+        assertThrows(UncheckedIOException.class, () -> repositories.participants().save(participant("b")));
+
+        assertTrue(attempts.get() > 1 && attempts.get() < 10);
+        assertEquals(before, Files.readString(file));
+        assertEquals(List.of(participant("a")), repositories.participants().findAll());
+        assertEquals(List.of(participant("a")), open(file).participants().findAll());
+        try (var files = Files.list(directory)) {
+            assertEquals(1L, files.count());
+        }
     }
 
     private static void assertEmpty(Repositories repositories) {
