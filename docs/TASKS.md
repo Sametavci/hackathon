@@ -536,3 +536,9 @@ packaged app on localhost:8080 serves the new assets; API ping returns {"ok":tru
 ### HACK-312 — final local integration (2026-10-29)
 
 User requested complete local Git integration into main. Audited all four worktrees, every local branch and all three stashes. The two older stashes are earlier snapshots of HACK-303 already integrated through 0b80d4c and subsequent main commits; do not reapply stale UI/backend files. Restore the latest stash single-time registration and clean local runner changes. Integrate the remaining HACK-304 Gemini deployment/SSM and demo-documentation fixes while retaining the newer HACK-310 buddy implementation. Include both supplied QR assets and the HACK-312 page refresh. Existing stash backups are retained.
+
+Final integration verification: frontend lint, 121 Vitest tests and production
+build passed; backend ./mvnw -q verify passed 188 tests with zero failures, errors
+or skips; infrastructure typecheck and 20 tests passed. Shell syntax checks passed
+for build.sh, build-all.sh and deploy.sh. All local branch tips are ancestors of
+the integrated result; historical stash snapshots remain as local backups.
