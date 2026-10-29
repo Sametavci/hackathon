@@ -15,6 +15,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -41,11 +42,17 @@ public class JsonFileStore {
 
     private final ObjectMapper mapper;
     private final Path dataFile;
+    private final SnapshotMover snapshotMover;
 
     @Inject
     public JsonFileStore(ObjectMapper mapper, @ConfigProperty(name = "lunch2.data-file") String dataFile) {
+        this(mapper, dataFile, JsonFileStore::moveSnapshot);
+    }
+
+    JsonFileStore(ObjectMapper mapper, String dataFile, SnapshotMover snapshotMover) {
         this.mapper = mapper;
         this.dataFile = Path.of(dataFile).toAbsolutePath().normalize();
+        this.snapshotMover = snapshotMover;
         try {
             Files.createDirectories(this.dataFile.getParent());
             if (Files.exists(this.dataFile)) {
@@ -143,11 +150,7 @@ public class JsonFileStore {
         try {
             temporary = Files.createTempFile(dataFile.getParent(), "lunch2-", ".tmp");
             mapper.writeValue(temporary.toFile(), snapshot());
-            try {
-                Files.move(temporary, dataFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException exception) {
-                Files.move(temporary, dataFile, StandardCopyOption.REPLACE_EXISTING);
-            }
+            replaceSnapshot(temporary);
         } catch (IOException exception) {
             if (temporary != null) {
                 try {
@@ -158,6 +161,39 @@ public class JsonFileStore {
             }
             throw new UncheckedIOException("Could not write the JSON snapshot", exception);
         }
+    }
+
+    private void replaceSnapshot(Path temporary) throws IOException {
+        for (int attempt = 0; ; attempt++) {
+            try {
+                snapshotMover.move(temporary, dataFile);
+                return;
+            } catch (AccessDeniedException exception) {
+                // Windows can briefly deny replacement while another process has the file open.
+                if (attempt >= 4) {
+                    throw exception;
+                }
+                try {
+                    Thread.sleep(20L * (attempt + 1));
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException("Interrupted while replacing the JSON snapshot", interrupted);
+                }
+            }
+        }
+    }
+
+    private static void moveSnapshot(Path source, Path target) throws IOException {
+        try {
+            Files.move(source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException exception) {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    @FunctionalInterface
+    interface SnapshotMover {
+        void move(Path source, Path target) throws IOException;
     }
 
     record ConnectionKey(String groupId, String fromId, String toId) {
