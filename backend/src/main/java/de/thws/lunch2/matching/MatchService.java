@@ -1,6 +1,8 @@
 package de.thws.lunch2.matching;
 
 import de.thws.lunch2.common.CatalogService;
+import de.thws.lunch2.common.MensaService;
+import java.util.LinkedHashMap;
 import de.thws.lunch2.domain.FriendPair;
 import de.thws.lunch2.domain.LunchGroup;
 import de.thws.lunch2.domain.MatchStatus;
@@ -34,15 +36,17 @@ public class MatchService {
     private final FriendPairRepository pairs;
     private final DataAdmin dataAdmin;
     private final CatalogService catalog;
+    private final MensaService mensas;
 
     @Inject
     public MatchService(ParticipantRepository participants, GroupRepository groups,
-            FriendPairRepository pairs, DataAdmin dataAdmin, CatalogService catalog) {
+            FriendPairRepository pairs, DataAdmin dataAdmin, CatalogService catalog, MensaService mensas) {
         this.participants = participants;
         this.groups = groups;
         this.pairs = pairs;
         this.dataAdmin = dataAdmin;
         this.catalog = catalog;
+        this.mensas = mensas;
     }
 
     // Serialize admin match/reset requests so two runs cannot assign the same waiting participants.
@@ -65,7 +69,25 @@ public class MatchService {
                 }
             }
         }
-        MatchOutput output = new MatchingEngine().match(new MatchInput(candidates, slots, previouslyMet));
+        // Partition by Mensa before running the pure matching engine.
+        Map<String, ReasonCode> mensaIssues = new LinkedHashMap<>();
+        for (FriendPair pair : pairsById.values()) {
+            if (pair.status() == PairStatus.UNLINKED) continue;
+            Participant a = byId.get(pair.inviterId()), b = byId.get(pair.inviteeId());
+            if (a == null || b == null) continue;
+            ReasonCode issue = a.campus() != b.campus() ? ReasonCode.FRIEND_DIFFERENT_CAMPUS
+                    : !mensaId(a).equals(mensaId(b)) ? ReasonCode.FRIEND_DIFFERENT_MENSA : null;
+            if (issue != null) { mensaIssues.put(a.id(), issue); mensaIssues.put(b.id(), issue); }
+        }
+        List<ProposedGroup> proposals = new ArrayList<>();
+        for (MensaService.Mensa mensa : mensas.mensas()) {
+            List<MatchCandidate> pool = candidates.stream().filter(c -> mensaId(byId.get(c.id())).equals(mensa.id()))
+                    .filter(c -> !mensaIssues.containsKey(c.id())).toList();
+            MatchOutput partition = new MatchingEngine().match(new MatchInput(pool, slots, previouslyMet));
+            proposals.addAll(partition.groups());
+            mensaIssues.putAll(partition.waiting());
+        }
+        MatchOutput output = new MatchOutput(List.copyOf(proposals), Map.copyOf(mensaIssues));
         Map<String, MatchCandidate> candidateById = candidates.stream()
                 .collect(Collectors.toMap(MatchCandidate::id, Function.identity()));
         // Validate the complete result before making the first persistent change.
@@ -81,7 +103,7 @@ public class MatchService {
             }
         }
         List<LunchGroup> planned = output.groups().stream().map(g -> new LunchGroup(UUID.randomUUID().toString(),
-                g.campus(), g.slotId(), catalog.location(g.campus()), g.memberIds(), g.sharedInterests(),
+                g.campus(), g.slotId(), groupLocation(g, byId), g.memberIds(), g.sharedInterests(),
                 g.commonLanguages(), explain(g, byId, candidateById), g.score(), Instant.now(), null)).toList();
         List<MatchRunResponse.CreatedGroup> created = new ArrayList<>();
         for (LunchGroup group : planned) {
@@ -103,6 +125,17 @@ public class MatchService {
     public synchronized void reset() {
         dataAdmin.wipeAll();
         LOG.info("Admin reset completed");
+    }
+
+    private String mensaId(Participant participant) {
+        return mensas.resolve(participant.campus(), participant.mensaId()).id();
+    }
+
+    private String groupLocation(ProposedGroup group, Map<String, Participant> byId) {
+        // Preserve configured locations for old clients/snapshots with no Mensa preference.
+        if (group.memberIds().stream().allMatch(id -> byId.get(id).mensaId() == null)) return catalog.location(group.campus());
+        Participant participant = byId.get(group.memberIds().getFirst());
+        return mensas.location(mensas.resolve(participant.campus(), participant.mensaId()));
     }
 
     private static String friendId(Participant participant, Map<String, FriendPair> pairs) {
@@ -131,6 +164,6 @@ public class MatchService {
 
     private static Participant withMatch(Participant p, MatchStatus status, String groupId, ReasonCode reason) {
         return new Participant(p.id(), p.tokenHash(), p.displayName(), p.category(), p.campus(), p.languages(),
-                p.interests(), p.slotIds(), p.studyField(), status, groupId, reason, p.friendPairId(), p.createdAt(), p.consentAt());
+                p.interests(), p.slotIds(), p.studyField(), status, groupId, reason, p.friendPairId(), p.createdAt(), p.consentAt(), p.mensaId());
     }
 }

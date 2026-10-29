@@ -25,7 +25,7 @@ Docs (read the relevant part **before** coding): `docs/SPEC.md` (what/acceptance
 | Dev | Owns |
 |---|---|
 | Dev 1 – platform, identity, connect, integration lead | `backend/pom.xml`, `application.properties`, packages `common, domain, persistence, auth, participant, invite, connect`; `frontend/src/pages/ConnectPage*.tsx`, `components/connect/`; `docs/*`, `AGENTS.md`, `README.md`, `.claude/` |
-| Dev 2 – matching, groups, cards, admin, demo | packages `matching, group, cards, admin`; `backend/src/main/resources/seed/`, `backend/src/main/docker/`, `scripts/`; `frontend/src/pages/AdminPage*.tsx` |
+| Dev 2 – matching, groups, cards, admin, demo | packages `matching, group, cards, admin`; `backend/src/main/resources/seed/`, `backend/src/main/docker/`, `scripts/`, `infra/` (AWS CDK); `frontend/src/pages/AdminPage*.tsx` |
 | Dev 3 – frontend experience | everything else in `frontend/` (incl. `App.tsx`, `api/`, `i18n/`, `package.json`) |
 Tests live next to the code owner's package (`backend/src/test/java/de/thws/lunch2/<module>/`).
 
@@ -63,4 +63,5 @@ Tests live next to the code owner's package (`backend/src/test/java/de/thws/lunc
 | Build | `./mvnw -q package` | `npm run build` |
 | Lint/typecheck | `./mvnw -q compile` (compiler only, no linter configured) | `npm run lint` (`tsc --noEmit`) |
 | Test | `./mvnw -q verify` (single test: `./mvnw -q test -Dtest=PingResourceTest`) | `npm test` |
+Deploy (AWS, see README): `./scripts/deploy.sh` · teardown `./scripts/destroy.sh` · infra checks `cd infra && npm run build && npm test` (CDK stack assertions + script tests, nothing is deployed).
 Smoke check: `curl -s localhost:8080/api/ping` → `{"ok":true}`.

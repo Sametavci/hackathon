@@ -23,7 +23,7 @@ class MetaResourceTest {
     void catalogsExposeExactFrozenIdsAndConfiguredCampusLocationsWithoutAuthentication() {
         var response = given().when().get("/api/meta").then().statusCode(200).contentType(ContentType.JSON)
                 .extract().jsonPath();
-        assertEquals(Set.of("campuses", "languages", "interests", "studyFields", "slots"),
+        assertEquals(Set.of("campuses", "languages", "interests", "studyFields", "slots", "mensas"),
                 response.getMap("").keySet());
         assertEquals(List.of("WUERZBURG", "SCHWEINFURT"), response.getList("campuses.id"));
         assertEquals("Würzburg", response.getString("campuses[0].label"));
@@ -43,7 +43,7 @@ class MetaResourceTest {
     void slotsHaveLocalIdsChronologicalOrderAndContractShape() {
         List<Map<String, String>> slots = given().when().get("/api/meta").then().statusCode(200)
                 .extract().jsonPath().getList("slots");
-        assertEquals(15, slots.size());
+        assertEquals(65, slots.size());
         assertEquals(5, slots.stream().map(slot -> slot.get("date")).distinct().count());
         List<String> ids = slots.stream().map(slot -> slot.get("id")).toList();
         assertEquals(ids.stream().sorted().toList(), ids);

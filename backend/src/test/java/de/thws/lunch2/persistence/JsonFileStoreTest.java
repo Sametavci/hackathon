@@ -258,6 +258,23 @@ class JsonFileStoreTest {
         assertThrows(UnsupportedOperationException.class, () -> repositories.participants().findAll().clear());
     }
 
+    @Test
+    void selectedMensaSurvivesSnapshotRestartAndLegacySnapshotsStillLoad() throws IOException {
+        Path file = directory.resolve("mensa.json");
+        Participant old = participant("legacy");
+        Participant selected = new Participant("selected", "hash-selected", "Test", Category.DOMESTIC,
+                Campus.WUERZBURG, List.of("en"), List.of("travel"), List.of("2026-11-03T12:15"),
+                null, MatchStatus.WAITING, null, ReasonCode.WAITING_FOR_NEXT_ROUND, null,
+                CREATED, CREATED, "WUERZBURG_JOSEF_SCHNEIDER");
+        var repositories = open(file);
+        repositories.participants().save(old);
+        repositories.participants().save(selected);
+        assertEquals(selected, open(file).participants().findById("selected").orElseThrow());
+        // Simulate a snapshot written before the optional field existed.
+        Files.writeString(file, Files.readString(file).replaceAll(",?\\s*\"mensaId\"\\s*:\\s*null", ""));
+        assertEquals(old, open(file).participants().findById("legacy").orElseThrow());
+    }
+
     private Repositories open(Path file) {
         return new Repositories(new JsonFileStore(new ObjectMapper().findAndRegisterModules(), file.toString()));
     }

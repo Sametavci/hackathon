@@ -98,7 +98,7 @@ class MeResourceTest {
 
         assertEquals(registration.getMap("me"), response.getMap(""));
         assertEquals(Set.of("id", "displayName", "category", "campus", "languages", "interests", "slotIds",
-                "studyField", "matchStatus", "waitingReason", "groupId", "friend", "pendingInvite"),
+                "studyField", "matchStatus", "waitingReason", "groupId", "friend", "pendingInvite", "mensaId"),
                 response.getMap("").keySet());
         assertEquals("WAITING", response.getString("matchStatus"));
         assertEquals(Map.of("code", "WAITING_FOR_NEXT_ROUND", "message", "Matching has not run since you registered."),

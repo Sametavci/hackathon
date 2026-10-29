@@ -59,7 +59,7 @@ class ParticipantResourceTest {
         assertEquals(Set.of("accessToken", "restoreUrl", "me"), response.getMap("").keySet());
         Map<String, Object> me = response.getMap("me");
         assertEquals(Set.of("id", "displayName", "category", "campus", "languages", "interests", "slotIds", "studyField",
-                "matchStatus", "waitingReason", "groupId", "friend", "pendingInvite"), me.keySet());
+                "matchStatus", "waitingReason", "groupId", "friend", "pendingInvite", "mensaId"), me.keySet());
         assertEquals("Lena", me.get("displayName"));
         assertEquals("DOMESTIC", me.get("category"));
         assertEquals("WUERZBURG", me.get("campus"));

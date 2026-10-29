@@ -1,0 +1,4 @@
+import type { ButtonHTMLAttributes } from 'react';
+export default function Chip({ selected, className = '', children, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { selected: boolean }) {
+  return <button type="button" aria-pressed={selected} className={`inline-flex min-h-11 items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition-colors disabled:opacity-50 motion-reduce:transition-none ${selected ? 'choice-selected border-brand bg-brand-soft text-ink ring-1 ring-brand' : 'border-line bg-white text-ink hover:border-brand hover:bg-brand-soft'} ${className}`} {...props}><span aria-hidden="true" className={`grid h-4 w-4 shrink-0 place-items-center rounded-full ${selected ? 'choice-check bg-brand text-xs text-white' : 'border border-ink-muted'}`}>{selected ? '✓' : ''}</span>{children}</button>;
+}

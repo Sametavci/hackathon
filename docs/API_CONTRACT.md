@@ -399,3 +399,41 @@ Frontend env (`frontend/.env.development`): `VITE_USE_MOCKS=true|false` (default
 | `#/admin` | `pages/AdminPage.tsx` (Dev 2, optional) | Seed / match / reset buttons |
 
 `frontend/src/api/endpoints.ts` (Dev 3, HACK-302) exports **one typed function per endpoint above, including E10–E13 and A1–A4**, with mock implementations in `api/mocks.ts` built from the sample payloads in this file. Token storage: `localStorage['lunch2.token']` via `api/session.ts`.
+
+## 7. Mensa registration extension (user-approved implementation, 2026-10-29)
+
+This additive extension is authorized by the approved registration/theme plan. It supersedes
+§2's fixed slot generation for new Mensa-aware registrations. Existing fields and endpoints remain.
+
+- `MetaResponse.mensas?: Mensa[]` is served by the backend. `Mensa` = `{id, campus, name,
+  address, defaultForCampus, hours, sourceUrl, verifiedOn, slotIds}`. `hours` contains
+  `{dayOfWeek, opens, lunchStart, foodUntil, closes}` (ISO weekday 1–7, local HH:mm).
+- Source catalog: `backend/src/main/resources/catalog/mensas.json`. These are static,
+  semester-time weekly hours verified against Studierendenwerk on 2026-10-29, not live status.
+  Holiday/closure overrides are not implemented. Hubland uses the regular 11:00 opening
+  in the official Würzburg listing; its detail page also contains historical seasonal notices.
+- Generate five weekdays from `lunch2.event-start-date`, skipping weekends. Each Mensa's slots
+  start at `lunchStart`, advance 45 minutes, start strictly before `foodUntil`, and finish by
+  `closes`. Global `slots` is the deduplicated union plus the original configured slot times;
+  each Mensa's `slotIds` is its allowed subset. Existing Slot wire shape and IDs are unchanged.
+- `RegistrationRequest.mensaId?: string|null` and `MeResponse.mensaId?: string|null`:
+  new UI requires a selection; missing/null on legacy requests resolves to Röntgenring
+  for WUERZBURG and THWS Campus for SCHWEINFURT. Old JSON participants resolve identically.
+  Explicit selections require correct campus and all slots in the Mensa's allowed subset.
+  Legacy requests may also use original configured slots within that Mensa's service hours.
+  Invalid Mensa/campus → 400 VALIDATION_FAILED; invalid slot → 400 UNKNOWN_SLOT.
+- The existing 1–15 selected-slot limit remains. Participant persistence adds nullable
+  `mensaId`; old Java constructors remain supported. Saved group locations are unchanged.
+- MensaService extends the original CatalogService/SlotService without replacing their catalog/legacy APIs.
+- Match per Mensa, preserving the pure engine's existing API, 2+2, language, campus and
+  friend constraints. Never split friend pairs across Mensas. Add reason code
+  `FRIEND_DIFFERENT_MENSA` ("You and your friend chose different Mensas."). This precedes
+  slot/language incompatibility after the existing different-campus check.
+- GroupResponse wire shape is unchanged: `location` contains Mensa name and address.
+  No participant-level category, languages or Mensa preferences are exposed in member objects.
+- Current location config keys remain accepted for legacy compatibility; new groups use
+  the selected catalog location. `lunch2.slot-times` remains the legacy-client slot schedule.
+
+Sources: [Würzburg listing](https://www.swerk-wue.de/wuerzburg/essen-trinken/mensen-speiseplaene),
+[Studentenhaus (Friday exception)](https://www.swerk-wue.de/wuerzburg/essen-trinken/mensen-speiseplaene/mensa-am-studentenhaus-wuerzburg),
+[Schweinfurt service hours](https://www.swerk-wue.de/schweinfurt/essen-trinken/mensen-speiseplaene/mensa-thws-campus-schweinfurt/menu).

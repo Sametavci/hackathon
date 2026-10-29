@@ -37,6 +37,24 @@ cd frontend && npm run lint && npm test && npm run build          # typecheck, t
 curl -s localhost:8080/api/ping                                   # {"ok":true} while quarkus:dev runs
 ```
 
+## Deploy to AWS (one EC2 instance, fixed public IP)
+Everything runs on one free-tier `t3.micro` with an Elastic IP: Quarkus serves the UI and the API on port 80, data is the JSON file on the instance.
+No load balancer, NAT, database or domain. Cost: the instance is free-tier eligible; the public IPv4 costs about $0.005/h (~$3.60/month), covered by free-plan credits.
+```
+brew install awscli && aws configure          # once: access key of an IAM user with admin rights
+./scripts/deploy.sh                            # build + secrets in SSM + cdk bootstrap/deploy, prints http://<IP>
+ANTHROPIC_API_KEY=sk-... ./scripts/deploy.sh   # same, with AI conversation cards
+./scripts/destroy.sh                           # delete the stack when the hackathon is over
+cd infra && npm install && npm test           # offline tests of the CDK stack and the scripts (no AWS needed)
+```
+- Region defaults to `eu-central-1` (Frankfurt); override with `AWS_REGION=...`.
+- Each deploy **replaces the instance** (same IP): stored data is wiped, so run admin seed again afterwards.
+- HTTP only (a bare IP can't get a TLS certificate): fine for a demo with fictional data, not for real users. Browsers block `navigator.clipboard`/`navigator.share` on plain HTTP except on localhost, so the UI must offer a visible link fallback.
+- Debug shell without SSH: the `ShellCommand` output (needs `brew install --cask session-manager-plugin`), then `sudo journalctl -u lunch2`.
+- Any Mac works (Intel or Apple Silicon): the build is a plain JVM app compiled for Java 21, verified on Amazon Linux 2023 + Corretto 21. `build-all.sh` picks a JDK 21+ automatically and always does a clean build.
+- `deploy.sh` stops if the folder has uncommitted changes (they would be deployed). Deploy from an up-to-date `main`; `ALLOW_DIRTY=1` overrides.
+- Don't build the Docker image in `backend/src/main/docker` on an Apple Silicon Mac for this server – it would be arm64. The CDK deploy doesn't use Docker.
+
 ## Project structure
 ```
 AGENTS.md / CLAUDE.md     rules for AI coding agents (CLAUDE.md imports AGENTS.md)
@@ -44,5 +62,7 @@ AGENTS.md / CLAUDE.md     rules for AI coding agents (CLAUDE.md imports AGENTS.m
 docs/                     SPEC, ARCHITECTURE, API_CONTRACT (frozen), TASKS (tickets + queues)
 backend/                  Quarkus app, packages de.thws.lunch2.{common,domain,persistence,auth,participant,invite,connect,matching,group,cards,admin}
 frontend/                 React + Vite + Tailwind, src/{api,components,pages,i18n}
+infra/                    AWS CDK (TypeScript): VPC, security group, EC2, Elastic IP
+scripts/                  build-all.sh, deploy.sh, destroy.sh
 ```
 Team workflow, ownership and the ticket queue for each developer: `docs/TASKS.md`.

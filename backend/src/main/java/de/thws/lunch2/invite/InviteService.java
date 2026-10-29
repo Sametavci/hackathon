@@ -1,6 +1,7 @@
 package de.thws.lunch2.invite;
 
 import de.thws.lunch2.common.ApiException;
+import de.thws.lunch2.common.MensaService;
 import de.thws.lunch2.domain.FriendPair;
 import de.thws.lunch2.domain.Invite;
 import de.thws.lunch2.domain.MatchStatus;
@@ -29,15 +30,17 @@ public class InviteService {
     private final ParticipantRepository participants;
     private final FriendPairRepository pairs;
     private final MeService me;
+    private final MensaService mensas;
     private final String publicBaseUrl;
 
     @Inject
     public InviteService(InviteRepository invites, ParticipantRepository participants, FriendPairRepository pairs,
-                         MeService me, @ConfigProperty(name = "lunch2.public-base-url") String publicBaseUrl) {
+                         MeService me, MensaService mensas, @ConfigProperty(name = "lunch2.public-base-url") String publicBaseUrl) {
         this.invites = invites;
         this.participants = participants;
         this.pairs = pairs;
         this.me = me;
+        this.mensas = mensas;
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
     }
 
@@ -125,12 +128,15 @@ public class InviteService {
         }
     }
 
-    private static ReasonCode compatibilityIssue(Participant inviter, Participant invitee) {
+    private ReasonCode compatibilityIssue(Participant inviter, Participant invitee) {
         if (inviter.matchStatus() == MatchStatus.MATCHED) {
             return ReasonCode.INVITER_ALREADY_MATCHED;
         }
         if (inviter.campus() != invitee.campus()) {
             return ReasonCode.FRIEND_DIFFERENT_CAMPUS;
+        }
+        if (!mensas.resolve(inviter.campus(), inviter.mensaId()).id().equals(mensas.resolve(invitee.campus(), invitee.mensaId()).id())) {
+            return ReasonCode.FRIEND_DIFFERENT_MENSA;
         }
         if (inviter.slotIds().stream().noneMatch(invitee.slotIds()::contains)) {
             return ReasonCode.FRIEND_NO_COMMON_SLOT;
@@ -145,7 +151,7 @@ public class InviteService {
         ReasonCode reason = participant.waitingReason();
         if (pairId == null && participant.matchStatus() == MatchStatus.WAITING && reason != null) {
             reason = switch (reason) {
-                case FRIEND_DIFFERENT_CAMPUS, FRIEND_NO_COMMON_SLOT, FRIEND_NO_COMMON_LANGUAGE, INVITER_ALREADY_MATCHED ->
+                case FRIEND_DIFFERENT_CAMPUS, FRIEND_DIFFERENT_MENSA, FRIEND_NO_COMMON_SLOT, FRIEND_NO_COMMON_LANGUAGE, INVITER_ALREADY_MATCHED ->
                         ReasonCode.WAITING_FOR_NEXT_ROUND;
                 default -> reason;
             };
@@ -153,7 +159,7 @@ public class InviteService {
         return new Participant(participant.id(), participant.tokenHash(), participant.displayName(), participant.category(),
                 participant.campus(), participant.languages(), participant.interests(), participant.slotIds(),
                 participant.studyField(), participant.matchStatus(), participant.groupId(), reason, pairId,
-                participant.createdAt(), participant.consentAt());
+                participant.createdAt(), participant.consentAt(), participant.mensaId());
     }
 
     private static ApiException invalidInvite() {

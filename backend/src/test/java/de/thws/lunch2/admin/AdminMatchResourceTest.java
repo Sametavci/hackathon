@@ -1,6 +1,6 @@
 package de.thws.lunch2.admin;
 
-import de.thws.lunch2.common.CatalogService;
+import de.thws.lunch2.common.MensaService;
 import de.thws.lunch2.common.SlotService;
 import de.thws.lunch2.domain.FriendPair;
 import de.thws.lunch2.domain.LunchGroup;
@@ -40,7 +40,7 @@ class AdminMatchResourceTest {
     @Inject GroupRepository groups;
     @Inject FriendPairRepository pairs;
     @Inject DataAdmin data;
-    @Inject CatalogService catalog;
+    @Inject MensaService mensas;
     @Inject SlotService slots;
     @Inject InviteRepository invites;
     @Inject ConnectionRepository connections;
@@ -66,7 +66,7 @@ class AdminMatchResourceTest {
         assertEquals(4, UUID.fromString(groupId).version());
         LunchGroup group = groups.findById(groupId).orElseThrow();
         assertEquals(ids.stream().sorted().toList(), group.memberIds());
-        assertEquals(catalog.location(group.campus()), group.location());
+        assertEquals(mensas.location(mensas.resolve(group.campus(), null)), group.location());
         assertEquals(List.of("travel"), group.sharedInterests());
         assertEquals(List.of("en"), group.commonLanguages());
         assertEquals(List.of("4 of you love Travel", "Everyone speaks English"), group.whyThisGroup());

@@ -20,4 +20,5 @@ public record RegistrationRequest(
         @NotNull @Size(min = 1, max = 15) List<@NotBlank String> slotIds,
         String studyField,
         String inviteCode,
-        Boolean consent) {}
+        Boolean consent,
+        String mensaId) {}

@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-brand-soft text-ink antialiased;
+@layer base {
+  body { @apply m-0 bg-white text-ink antialiased; font-family: ui-sans-serif, system-ui, sans-serif; }
+  * { @apply box-border; }
+  :focus-visible { @apply outline outline-2 outline-offset-4 outline-ink; }
+  input, select, textarea { @apply text-base; }
+  h1 { @apply text-4xl font-black leading-tight tracking-tight; }
+  h2 { @apply text-xl font-bold tracking-tight; }
+  p { overflow-wrap: anywhere; }
+  fieldset { min-width: 0; }
 }
+@layer components {
+  .field { @apply min-h-11 w-full min-w-0 rounded-2xl border border-line bg-white px-4 py-3 text-ink; }
+  .eyebrow { @apply text-xs font-bold uppercase tracking-widest text-ink-muted; }
+  .section-number { @apply mr-2 inline-grid h-7 w-7 place-items-center rounded-full bg-brand-soft text-xs font-bold; }
+}
+#root { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); padding-bottom: env(safe-area-inset-bottom); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
+
+@layer components {
+  .wizard-enter { animation: wizard-enter 240ms ease-out both; }
+  .choice-selected { animation: choice-pop 260ms ease-out; }
+  .choice-check { animation: check-in 180ms ease-out both; }
+}
+@keyframes wizard-enter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes choice-pop { 0%, 100% { transform: scale(1); } 55% { transform: scale(1.035); } }
+@keyframes check-in { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .wizard-enter, .choice-selected, .choice-check { animation: none; } }
