@@ -29,3 +29,24 @@
 @keyframes choice-pop { 0%, 100% { transform: scale(1); } 55% { transform: scale(1.035); } }
 @keyframes check-in { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .wizard-enter, .choice-selected, .choice-check { animation: none; } }
+
+@layer components {
+  .day-carousel { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .day-carousel::-webkit-scrollbar { display: none; }
+  .day-carousel button:focus-visible { outline-offset: -5px; }
+  .lunch-scene { position: relative; aspect-ratio: 1.2; }
+  .lunch-orbit { position: absolute; inset: 8% 2%; border: 1px dashed theme('colors.line'); border-radius: 50%; transform: rotate(-15deg); }
+  .lunch-table { position: absolute; inset: 21% 20%; border-radius: 48%; background: theme('colors.brand.DEFAULT'); transform: rotate(-12deg); box-shadow: 0 16px 0 theme('colors.brand.soft'); }
+  .lunch-seat { position: absolute; display: grid; place-items: center; width: 21%; aspect-ratio: 1; border: 7px solid white; border-radius: 50%; z-index: 1; }
+  .lunch-seat-top { top: 0; left: 39.5%; background: theme('colors.accent'); transform: rotate(-10deg); }
+  .lunch-seat-right { top: 37%; right: 0; background: theme('colors.brand.soft'); transform: rotate(12deg); }
+  .lunch-seat-bottom { bottom: 0; left: 39.5%; background: theme('colors.ink.DEFAULT'); color: white; transform: rotate(10deg); }
+  .lunch-seat-left { top: 37%; left: 0; background: theme('colors.accent'); transform: rotate(-14deg); }
+  .lunch-face { position: relative; display: block; width: 43%; height: 43%; border-bottom: 2px solid currentColor; border-radius: 0 0 50% 50%; }
+  .lunch-face::before, .lunch-face::after { content: ''; position: absolute; top: 20%; width: 3px; height: 4px; border-radius: 50%; background: currentColor; }
+  .lunch-face::before { left: 18%; } .lunch-face::after { right: 18%; }
+  .lunch-plate { position: absolute; width: 25%; aspect-ratio: 1; border: 5px solid white; border-radius: 50%; background: theme('colors.accent'); box-shadow: inset 0 0 0 3px theme('colors.brand.soft'); }
+  .lunch-plate-one { top: 10%; left: 20%; } .lunch-plate-two { top: 24%; right: 8%; }
+  .lunch-plate-three { bottom: 10%; right: 22%; } .lunch-plate-four { bottom: 25%; left: 8%; }
+  .lunch-flower { position: absolute; inset: 0; display: grid; place-items: center; color: theme('colors.accent'); font-size: clamp(1.4rem, 4vw, 2.4rem); }
+}
