@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { getGroup } from '../api/endpoints';
 import { buttonClasses } from '../components/Button';
 import GameHub from '../components/games/GameHub';
+import Disclosure from '../components/Disclosure';
 import { gameCatalog } from '../components/games/gameCatalog';
 import { useI18n } from '../i18n';
 import LoadState from '../components/LoadState';
@@ -22,13 +23,13 @@ function PlayContent({ groupId, gameId }: { groupId: string; gameId?: string }) 
   return <div className="space-y-6 pt-3">
     {!gameId ? <GameHub groupId={groupId} /> : Game ? <>
       <Link className="inline-flex min-h-11 items-center text-sm underline" to={`${base}/play`}>← {t('games.backToHub')}</Link>
-      <p className="rounded-2xl bg-brand-soft p-4 text-sm leading-relaxed">{t('games.rules')}</p>
+      <Disclosure title={t('ui.rules')}><p>{t('games.rules')}</p></Disclosure>
       <Game key={`${groupId}-${gameId}`} groupId={groupId} />
     </> : <>
       <p role="status">{t('games.notAvailable')}</p>
       <Link className={buttonClasses} to={`${base}/play`}>{t('games.backToHub')}</Link>
     </>}
-    <Link className={`${buttonClasses} w-full`} to={base}>{t('games.backToGroup')}</Link>
+    <Link className={`${buttonClasses} w-full !border-line !bg-white !text-ink`} to={base}>{t('games.backToGroup')}</Link>
   </div>;
 }
 

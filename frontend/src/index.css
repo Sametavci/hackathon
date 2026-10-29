@@ -7,8 +7,8 @@
   * { @apply box-border; }
   :focus-visible { @apply outline outline-2 outline-offset-4 outline-ink; }
   input, select, textarea { @apply text-base; }
-  h1 { @apply text-4xl font-black leading-tight tracking-tight; }
-  h2 { @apply text-xl font-bold tracking-tight; }
+  h1 { @apply text-3xl font-bold leading-tight tracking-tight; }
+  h2 { @apply text-lg font-semibold tracking-tight; }
   p { overflow-wrap: anywhere; }
   fieldset { min-width: 0; }
 }
@@ -17,7 +17,7 @@
   .eyebrow { @apply text-xs font-bold uppercase tracking-widest text-ink-muted; }
   .section-number { @apply mr-2 inline-grid h-7 w-7 place-items-center rounded-full bg-brand-soft text-xs font-bold; }
 }
-#root { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); padding-bottom: env(safe-area-inset-bottom); }
+#root { padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); padding-bottom: env(safe-area-inset-bottom); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
 
 @layer components {
@@ -54,9 +54,9 @@
 @layer components {
   .landing-heading { min-height: clamp(7rem, 20vw, 10rem); }
   .landing-word { padding-bottom: .12em; margin-bottom: -.12em; }
-  .landing-word-enter { animation: word-roll 500ms ease-out both; }
-  .lunch-rotor { position: absolute; inset: 3%; animation: table-turn 24s linear infinite; animation-play-state: var(--motion-state, paused); }
-  .lunch-face { animation: face-turn 24s linear infinite; animation-play-state: var(--motion-state, paused); }
+  .landing-word-enter { animation: word-roll 420ms cubic-bezier(.22, 1, .36, 1) both; }
+  .lunch-rotor { position: absolute; inset: 3%; animation: table-turn 16s linear infinite; animation-play-state: var(--motion-state, paused); }
+  .lunch-face { animation: face-turn 16s linear infinite; animation-play-state: var(--motion-state, paused); }
   .lunch-table { transition: border-radius 500ms ease, background-color 500ms ease; }
   .lunch-plate { transition: background-color 500ms ease; }
   .lunch-scene[data-scene="1"] .lunch-table { border-radius: 30%; background: theme('colors.ink.DEFAULT'); }
@@ -66,4 +66,23 @@
 }
 @keyframes table-turn { to { transform: rotate(360deg); } }
 @keyframes face-turn { to { transform: rotate(-360deg); } }
-@keyframes word-roll { from { opacity: 0; transform: translateY(70%); } to { opacity: 1; transform: translateY(0); } }
+@keyframes word-roll { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+
+@layer components {
+  .lunch-face::before, .lunch-face::after { animation: face-blink 3.7s ease-in-out infinite; animation-play-state: var(--motion-state, paused); }
+  .lunch-seat { animation: face-greet 3.4s ease-in-out infinite; animation-play-state: var(--motion-state, paused); }
+  .lunch-seat-right { animation-duration: 2.7s; animation-delay: -.8s; }
+  .lunch-seat-bottom { animation-duration: 4.1s; animation-delay: -1.7s; }
+  .lunch-seat-left { animation-duration: 3.1s; animation-delay: -2.3s; }
+  .lunch-seat-right .lunch-face::before, .lunch-seat-right .lunch-face::after { animation-delay: -.9s; }
+  .lunch-seat-bottom .lunch-face::before, .lunch-seat-bottom .lunch-face::after { animation-delay: -2.1s; }
+  .lunch-seat-left .lunch-face::before, .lunch-seat-left .lunch-face::after { animation-delay: -1.5s; }
+}
+@keyframes face-greet { 0%, 45%, 100% { transform: rotate(-8deg); } 60% { transform: rotate(18deg); } 75% { transform: rotate(-15deg); } }
+@keyframes face-blink { 0%, 43%, 49%, 100% { scale: 1 1; } 46% { scale: 1 .15; } }
+@media (prefers-reduced-motion: reduce) { .lunch-rotor, .lunch-face, .lunch-seat, .lunch-face::before, .lunch-face::after, .landing-word-enter { animation: none; } }
+
+@layer base {
+  summary::-webkit-details-marker { display: none; }
+  summary { list-style: none; }
+}

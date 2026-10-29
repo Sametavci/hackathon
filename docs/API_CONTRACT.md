@@ -74,7 +74,7 @@ Catalogs (served by `GET /api/meta`, defined in backend `CatalogService`, owned 
 - **languages** (`code`): `en, de, tr, ar, es, fr, it, pt, ru, uk, zh, hi`
 - **interests** (`id`): `gaming, travel, tech, football, music, cooking, hiking, movies, photography, art, reading, fitness, startups, languages, anime, boardgames`
 - **studyFields** (`id`): `COMPUTER_SCIENCE, ENGINEERING, BUSINESS, DESIGN, SOCIAL_SCIENCES, HEALTH, OTHER`
-- **slots**: 5 weekdays starting `lunch2.event-start-date` (default `2026-11-02`) × times `11:30, 12:15, 13:00`, each 45 min.
+- **slots**: weekdays over 366 calendar days starting `lunch2.event-start-date` (default `TODAY`, Europe/Berlin at process startup) × times `11:30, 12:15, 13:00`, each 45 min.
 - **campus locations** (config, placeholder text): `WUERZBURG → "Mensa Würzburg – Lunch² table (yellow sign)"`, `SCHWEINFURT → "Mensa Schweinfurt – Lunch² table (yellow sign)"`.
 
 ---
@@ -404,7 +404,7 @@ truncate six to five or supplement three/four with fallback questions to preserv
 | `lunch2.admin-key` | `LUNCH2_ADMIN_KEY` | `dev-admin-key` | Dev 1 filter / Dev 2 admin |
 | `lunch2.demo-mode` | `LUNCH2_DEMO_MODE` | `true` | Dev 2 seed |
 | `lunch2.public-base-url` | `LUNCH2_PUBLIC_BASE_URL` | `http://localhost:5173` | invite/restore URLs |
-| `lunch2.event-start-date` | `LUNCH2_EVENT_START_DATE` | `2026-11-02` | slots |
+| `lunch2.event-start-date` | `LUNCH2_EVENT_START_DATE` | `TODAY` | slots |
 | `lunch2.slot-times` | – | `11:30,12:15,13:00` | slots |
 | `lunch2.location.wuerzburg` / `.schweinfurt` | – | see §2 | groups |
 | `lunch2.ai.api-key` | `GEMINI_API_KEY` | *(empty → fallback only)* | Dev 2 |
@@ -445,7 +445,7 @@ This additive extension is authorized by the approved registration/theme plan. I
   semester-time weekly hours verified against Studierendenwerk on 2026-10-29, not live status.
   Holiday/closure overrides are not implemented. Hubland uses the regular 11:00 opening
   in the official Würzburg listing; its detail page also contains historical seasonal notices.
-- Generate five weekdays from `lunch2.event-start-date`, skipping weekends. Each Mensa's slots
+- Generate weekdays over 366 calendar days from `lunch2.event-start-date`, skipping weekends. Each Mensa's slots
   start at `lunchStart`, advance 45 minutes, start strictly before `foodUntil`, and finish by
   `closes`. Global `slots` is the deduplicated union plus the original configured slot times;
   each Mensa's `slotIds` is its allowed subset. Existing Slot wire shape and IDs are unchanged.
@@ -495,3 +495,33 @@ endpoint, request/response field, enum, matching language or saved backend value
 changes. Catalog IDs and known status/error codes are localized for display. Card
 text remains exactly as returned in the group's shared language; user-provided
 names, contacts and Mensa addresses are preserved.
+
+### Frontend calendar and presentation clarification (HACK-309, 2026-10-29)
+No endpoint, DTO, enum, catalog ID or configuration changes. The frontend calendar
+shows the current Berlin week and full months even outside the returned slot range.
+Only future/current dates with existing `slots` IDs also listed in the selected
+Mensa's `slotIds` provide time choices; other dates show no availability. The default
+event start now defaults to `TODAY` in Europe/Berlin; an explicit ISO date remains supported. Localized alphabetical option order and the single
+flag locale menu are presentation-only; selection limits and submitted IDs are unchanged.
+
+Frontend refinement: headline rows change independently with a staggered start; fixed word widths keep the heading stationary while changing words slide upward inside a clipped area. German headlines consistently begin with “Gute” (including “Gute Küche”). Flag selection applies on pointer activation before blur can dismiss the menu. No API changes.
+
+### Current weekdays and calmer screens (user-approved, 2026-10-29)
+Supersedes the earlier fixed-date-default presentation clarification: the existing
+`lunch2.event-start-date` / `LUNCH2_EVENT_START_DATE` key defaults to `TODAY`.
+Both SlotService and MensaService resolve it to the Europe/Berlin date at process
+startup, then generate the weekdays across the next 366 calendar days using existing times and Mensa hours.
+Explicit `YYYY-MM-DD` values still pin the event for a reproducible demo. Mock
+metadata uses the current Berlin date when loaded; explicit mock catalog dates still
+work. The UI disables past dates and weekends; weekly navigation shows Mon–Fri,
+while full months retain disabled weekend cells. No endpoint, DTO, field, enum, ID
+format or selection-limit changes. Me/Admin detail disclosure is presentation-only;
+reset and account deletion keep their explicit confirmations.
+
+Calendar availability now spans 366 calendar days, weekdays only, with unchanged Mensa hours. Dates without returned Mensa slots are disabled; navigation ends at the available range. The earlier five-weekday limit is superseded.
+
+Brand icon update: frontend presentation only; API payloads, identifiers and endpoints are unchanged.
+
+Frontend visual simplification: common headings/avatars/disclosures and concise
+EN/DE copy only. No API, DTO, persistence, calendar generation, authorization or
+contact visibility changes. Privacy explanations remain available in disclosures.

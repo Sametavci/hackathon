@@ -3,11 +3,11 @@ import type { Campus, Mensa, Slot } from './types';
 
 const minutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
 const clock = (value: number) => `${Math.floor(value / 60).toString().padStart(2, '0')}:${(value % 60).toString().padStart(2, '0')}`;
-export function createMensaCatalog(startDate: string): { mensas: Mensa[]; slots: Slot[] } {
+export function createMensaCatalog(startDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Berlin' }).format(new Date())): { mensas: Mensa[]; slots: Slot[] } {
   const slots = new Map<string, Slot>();
   const dates: string[] = [];
   const cursor = new Date(`${startDate}T12:00:00Z`);
-  while (dates.length < 5) {
+  for (let offset = 0; offset < 366; offset++) {
     if (cursor.getUTCDay() !== 0 && cursor.getUTCDay() !== 6) dates.push(cursor.toISOString().slice(0, 10));
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }

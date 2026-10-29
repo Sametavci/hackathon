@@ -201,7 +201,7 @@ export async function mockRequest<T>(path: string, options: RequestOptions = {})
     // Seed once; never overwrite live registrations or invalidate return links.
     const existing = Object.values(state.participants).filter(p => p.displayName.endsWith(' demo'));
     const people = existing.length ? existing : ['Mia', 'Ben', 'Noor', 'Kai', 'Aiko', 'Omar'].map((name, index) => register(state, {
-      displayName: `${name} demo`, category: index < 2 ? 'DOMESTIC' : 'INTERNATIONAL', campus: 'WUERZBURG', languages: ['en', 'de'], interests: ['travel', 'gaming'], slotIds: [index < 4 ? '2026-11-02T11:30' : '2026-11-03T12:15'], studyField: null, inviteCode: null, consent: true,
+      displayName: `${name} demo`, category: index < 2 ? 'DOMESTIC' : 'INTERNATIONAL', campus: 'WUERZBURG', languages: ['en', 'de'], interests: ['travel', 'gaming'], slotIds: [mockMeta.slots[index < 4 ? 0 : 4].id], studyField: null, inviteCode: null, consent: true,
     }).me);
     output = { participants: people.map(p => { const token = Object.keys(state.tokens).find(token => state.tokens[token] === p.id)!; return { id: p.id, displayName: p.displayName, campus: p.campus, category: p.category, restoreUrl: `${baseUrl()}#/back?t=${token}` }; }) } satisfies SeedResponse;
   } else if (path === '/admin/match') output = match(state);

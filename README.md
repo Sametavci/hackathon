@@ -111,9 +111,32 @@ Team workflow, ownership and the ticket queue for each developer: `docs/TASKS.md
 
 ## Interface languages and landing animation
 
-Choose English or Deutsch in the header. The preference is saved in this browser;
+Choose English or Deutsch from the single-flag menu in the header. The preference is saved in this browser;
 on first use a German primary browser language selects Deutsch, otherwise English.
 Language changes preserve your current registration, session and loaded pages.
 Conversation questions keep the group's shared language.
-The centered landing animates headlines and a four-person table. Use its pause
-control to stop motion; reduced-motion settings and hidden tabs suspend animation.
+The centered landing shuffles the two headline rows independently every 1.8–2.8 seconds and rotates
+the table every 16 seconds, with staggered face gestures. Reduced-motion settings
+and hidden tabs suspend animation. Registration languages and hobbies appear in
+alphabetical two-column tiles. The compact calendar opens on today in the current
+Berlin week, with week arrows, swipe navigation and a full-month calendar button.
+Past dates and weekends are disabled. Only API-provided Mensa slots can be booked.
+The event now defaults to today in Europe/Berlin at backend startup, generating the
+weekdays across the next 366 calendar days with the existing Mensa hours. Restart the backend to apply this
+default; remove an old `LUNCH2_EVENT_START_DATE` override or set it to `TODAY`.
+An explicit ISO date still pins a demo. Mock dates default to today on page load.
+
+Frontend refinement: headline rows change independently with a staggered start; fixed word widths keep the heading stationary while changing words slide upward inside a clipped area. German headlines consistently begin with “Gute” (including “Gute Küche”). Flag selection applies on pointer activation before blur can dismiss the menu. No API changes.
+
+My lunch shows a compact status, location and first two lunch times. Expand the
+choices or return-link row for extra details. Admin puts matching first; demo/reset
+controls, result lists and extra metrics expand on demand. Destructive operations
+still require confirmation. Mobile layout includes the phone's top safe area.
+
+Calendar availability now spans 366 calendar days, weekdays only, with unchanged Mensa hours. Dates without returned Mensa slots are disabled; navigation ends at the available range. The earlier five-weekday limit is superseded.
+
+The header and browser tab share the Lunch² table icon: four seats and two plates in the existing green/gold palette.
+
+The frontend shares compact headings, profile avatars and quiet cards across admin
+and student pages. Secondary explanations and privacy sections expand on demand;
+registration, booking times, contact sharing and admin actions behave as before.

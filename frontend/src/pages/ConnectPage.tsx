@@ -7,6 +7,7 @@ import { useI18n } from '../i18n';
 import Button, { buttonClasses } from '../components/Button';
 import LoadState from '../components/LoadState';
 import SessionGate from '../components/SessionGate';
+import PageHeading from '../components/PageHeading';
 import ConnectionCard from '../components/connect/ConnectionCard';
 function ConnectContent({ groupId }: { groupId: string }) {
   const { t } = useI18n();
@@ -29,9 +30,7 @@ function ConnectContent({ groupId }: { groupId: string }) {
 
   return (
     <div className="space-y-5 pt-3">
-      <p className="eyebrow">{t('group.connect')}</p>
-      <h1>{t('connect.title')}</h1>
-      <p className="text-sm leading-relaxed text-ink-muted">{t('connect.body')}</p>
+      <PageHeading title={t('connect.title')} description={t('connect.body')} />
       {changed && <p role="status" className="rounded-2xl bg-brand-soft p-4 text-sm">{t('connect.changed')}</p>}
       {!resource.data || refreshing ? <LoadState {...resource} /> : (
         <>
@@ -52,7 +51,7 @@ function ConnectContent({ groupId }: { groupId: string }) {
           </Button>
         </>
       )}
-      <Link to={`/group/${encodeURIComponent(groupId)}`} className={`${buttonClasses} w-full`}>{t('connect.backToGroup')}</Link>
+      <Link to={`/group/${encodeURIComponent(groupId)}`} className={`${buttonClasses} w-full !border-line !bg-white !text-ink`}>{t('connect.backToGroup')}</Link>
     </div>
   );
 }

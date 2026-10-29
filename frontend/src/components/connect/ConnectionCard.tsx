@@ -4,6 +4,7 @@ import { setConnection, shareContact, withdrawContact } from '../../api/endpoint
 import { ApiError } from '../../api/client';
 import { useI18n, type MessageKey } from '../../i18n';
 import Card from '../Card';
+import Avatar from '../Avatar';
 import Button from '../Button';
 import ErrorBanner from '../ErrorBanner';
 interface ConnectionCardProps {
@@ -53,8 +54,8 @@ export default function ConnectionCard({ item, groupId, disabled, onUpdate, onBu
   return (
     <Card role="region" aria-labelledby={headingId} aria-busy={busy} className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id={headingId} className="min-w-0 break-words">{deleted ? t('connect.deleted') : item.displayName}</h2>
-        {!deleted && <span role="status" className={`rounded-full px-3 py-2 text-xs font-semibold ${item.status === 'MUTUAL' ? 'bg-accent' : 'bg-brand-soft'}`}>
+        <div className="flex min-w-0 items-center gap-3"><Avatar name={deleted ? t('connect.deleted') : item.displayName} small /><h2 id={headingId} className="min-w-0 break-words text-base">{deleted ? t('connect.deleted') : item.displayName}</h2></div>
+        {!deleted && <span role="status" className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${item.status === 'MUTUAL' ? 'bg-brand-soft text-brand' : 'bg-brand-soft text-ink-muted'}`}>
           {t(`connect.${item.status}`)}
         </span>}
       </div>
@@ -108,7 +109,7 @@ export default function ConnectionCard({ item, groupId, disabled, onUpdate, onBu
         </>
       )}
       {!!error && <ErrorBanner error={error} />}
-      <p role="status" className="text-sm text-ink-muted">{announcement ? t(announcement) : ''}</p>
+      <p role="status" className={announcement ? 'text-xs text-ink-muted' : 'sr-only'}>{announcement ? t(announcement) : ''}</p>
     </Card>
   );
 }

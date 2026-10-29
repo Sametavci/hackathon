@@ -32,19 +32,15 @@ export default function ConversationCards({ groupId }: { groupId: string }) {
 
   return (
     <section id="conversation-cards" className="space-y-5" aria-labelledby="cards-title">
-      <header className="space-y-3">
-        <p className="eyebrow">{t('group.cards')}</p>
-        <h1 id="cards-title">{t('games.icebreakers')}</h1>
-        <p className="text-sm leading-relaxed text-ink-muted">{t('cards.subtitle')}</p>
-      </header>
+      <header><h1 id="cards-title" className="text-[1.75rem] font-bold">{t('games.icebreakers')}</h1></header>
       {!cards.data ? <LoadState {...cards} /> : !deck.length
         ? <ErrorBanner error={new Error(t('cards.empty'))} onRetry={cards.reload} />
-        : finished ? <div className="space-y-4 rounded-3xl border border-line bg-brand-soft p-6">
+        : finished ? <div className="space-y-4 rounded-2xl border border-line bg-brand-soft p-6">
           <h2>{t('games.finished')}</h2>
           <p className="text-sm leading-relaxed">{t('games.finishedBody')}</p>
           <Button className="w-full" onClick={shuffle}>{t('games.replay')}</Button>
         </div> : <>
-          <div className="relative min-h-64 touch-pan-y rounded-3xl border border-line bg-accent p-6"
+          <div className="relative min-h-64 touch-pan-y rounded-2xl border border-line bg-brand-soft p-6"
             onPointerDown={event => { start.current = { x: event.clientX, y: event.clientY }; }}
             onPointerCancel={() => { start.current = null; }}
             onPointerUp={event => {
@@ -59,7 +55,7 @@ export default function ConversationCards({ groupId }: { groupId: string }) {
             <span className="inline-block rounded-full bg-white/80 px-3 py-1 text-xs font-bold">
               {t(cards.data.source === 'AI' ? 'games.mixed' : 'cards.classic')}
             </span>
-            <p className="mt-8 break-words text-2xl font-bold leading-snug" aria-live="polite" aria-atomic="true">{deck[activeIndex].text}</p>
+            <p className="mt-8 break-words text-2xl font-semibold leading-snug" aria-live="polite" aria-atomic="true">{deck[activeIndex].text}</p>
           </div>
           <p className="text-center text-sm font-semibold" role="status">{t('cards.progress')} {activeIndex + 1} {t('cards.of')} {deck.length}</p>
           <div className="grid grid-cols-2 gap-3">

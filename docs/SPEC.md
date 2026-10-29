@@ -84,12 +84,51 @@ Registration balance D:I, registration → match conversion, attendance (future:
 
 ## Animated landing and bilingual interface (HACK-309, 2026-10-29)
 
-The centered landing cycles three paired headlines every four seconds and rotates its
-four-person table once every 24 seconds. A pause control, reduced-motion preference
-and hidden-tab suspension stop motion without moving the CTA.
+The centered landing shuffles the two headline rows independently without consecutive repeats every
+1.8–2.8 seconds. Its four-person table rotates every 16 seconds, with independent
+staggered face gestures. There is no manual pause control; reduced-motion preference
+and hidden-tab suspension stop motion without moving the CTA. Headline pairs share
+a centered sizing area so German copy stays aligned without extra internal gaps.
 All frontend screens, including Play Together, Connect and Admin, support English
 and Deutsch. The saved UI preference takes priority over the browser's primary
 language (German selects Deutsch; otherwise English). Changing language preserves
 registration answers, the current step, loaded data and the session. Conversation
 questions remain in the group's shared language; names, addresses and supplied
 contact text are never translated. Existing matching and API behavior is unchanged.
+
+### Frontend layout and registration calendar polish (HACK-309)
+The header shows one flag opening an accessible English/Deutsch flag menu. Language
+and interest choices use equal-width two-column tiles, sorted by localized labels;
+locale changes preserve selections and the existing four/five choice limits.
+The compact weekly calendar starts on Monday of the current Europe/Berlin week,
+with today initially focused, week arrows, swipe/keyboard navigation and an inline
+full-month calendar with month arrows. Past dates and weekends are disabled; today is underlined,
+the active day highlighted and dates with selected slots dotted. Dates without slots
+show an empty state. Only existing API slots for the chosen Mensa can be selected;
+calendar navigation preserves slot selections. The default slot range is the weekdays across the next 366 calendar days starting today in Europe/Berlin; explicit event-date overrides remain supported.
+
+Frontend refinement: headline rows change independently with a staggered start; fixed word widths keep the heading stationary while changing words slide upward inside a clipped area. German headlines consistently begin with “Gute” (including “Gute Küche”). Flag selection applies on pointer activation before blur can dismiss the menu. No API changes.
+
+### Current-week availability and simpler account/admin screens
+The calendar's weekly strip displays five weekdays. Today is selectable when it is
+a weekday; weekends initially focus the next Monday. Default backend/mock slots
+start today instead of 2 November, respect each Mensa's weekday service hours and
+retain the 366-calendar-day generation window. Month weekends are visible but disabled.
+The post-registration screen uses a short waiting status and compact location/time
+summary. Interests, extra times and the private return-link explanation are expandable;
+copy/fallback and delete confirmation remain available. Admin emphasizes matching,
+with secondary seed/metrics actions, optional demo/reset controls, compact result
+counts and expandable participant/waiting lists. Technical JSON is removed from
+this screen; the metrics API is unchanged. Phone content respects the top safe area.
+
+Calendar availability now spans 366 calendar days, weekdays only, with unchanged Mensa hours. Dates without returned Mensa slots are disabled; navigation ends at the available range. The earlier five-weekday limit is superseded.
+
+Brand polish: the header pairs a four-person lunch-table icon with the Lunch² wordmark; the same icon is used as the favicon.
+
+### Frontend visual consistency (HACK-309 follow-up)
+All participant and admin pages use quieter typography, compact cards and one
+primary action per screen. Profile and admin participant lists share initial avatars.
+Group matching explanations, game rules and full privacy sections are expandable;
+essential status, meeting details, contact-sharing controls, consent and destructive
+action confirmations remain visible when needed. EN/DE copy is concise. Backend,
+booking times, matching, permissions and session behavior are unchanged.
