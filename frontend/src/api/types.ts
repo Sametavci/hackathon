@@ -31,7 +31,10 @@ export interface RegistrationRequest {
 }
 export interface Reason { code: ReasonCode; message: string }
 export interface InviteResponse { code: string; url: string }
-export interface InvitePreview { code: string; inviterDisplayName: string; campus: Campus; valid: boolean }
+export interface InvitePreview {
+  code: string; inviterDisplayName: string; campus: Campus; valid: boolean;
+  mensaId?: string; slotIds?: string[]; inviterMatchStatus?: MatchStatus;
+}
 export interface MeResponse {
   mensaId?: string | null;
   id: string; displayName: string; category: Category; campus: Campus;

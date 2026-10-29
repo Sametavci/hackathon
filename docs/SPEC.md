@@ -93,3 +93,15 @@ language (German selects Deutsch; otherwise English). Changing language preserve
 registration answers, the current step, loaded data and the session. Conversation
 questions remain in the group's shared language; names, addresses and supplied
 contact text are never translated. Existing matching and API behavior is unchanged.
+
+## Buddy registration extension (2026-10-29)
+
+From My lunch, waiting unpaired participants create an idempotent single-use invite,
+share/copy its URL or show its QR. The join page previews inviter name, campus, Mensa
+and availability. Buddy registration inherits campus/Mensa and asks the buddy to select
+a nonempty subset of the inviter's slots; personal category, languages, interests,
+nickname and consent remain their own answers. No times fit -> explicit solo registration.
+Used/invalid invites, already matched inviters and existing signed-in registrations
+receive explanations and an appropriate solo/My lunch link. Existing registrations
+cannot be linked through this flow. Both profiles display buddy status and can unlink;
+unlink does not change an existing group. Matching is still an admin action.

@@ -59,7 +59,8 @@ public class InviteService {
     public synchronized InvitePreview preview(String code) {
         Invite invite = requireInvite(code);
         Participant inviter = participants.findById(invite.inviterId()).orElseThrow(InviteService::invalidInvite);
-        return new InvitePreview(invite.code(), inviter.displayName(), inviter.campus(), invite.usedById() == null);
+        return new InvitePreview(invite.code(), inviter.displayName(), inviter.campus(), invite.usedById() == null,
+                mensas.resolve(inviter.campus(), inviter.mensaId()).id(), inviter.slotIds(), inviter.matchStatus());
     }
 
     public synchronized Participant attachIfPresent(Participant participant, String inviteCode) {
