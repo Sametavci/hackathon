@@ -26,8 +26,7 @@ export function createAutoAdvance(advance: (next: number) => void, delay = 220) 
   };
 }
 
-/** Keep lunch-time selections on one civil date; a new date replaces the old one. */
-export function toggleDaySlot(selected: readonly string[], slotId: string): string[] {
-  const sameDay = selected.filter(id => id.slice(0, 10) === slotId.slice(0, 10));
-  return sameDay.includes(slotId) ? sameDay.filter(id => id !== slotId) : [...sameDay, slotId];
+/** Select exactly one lunch time across all dates, using the existing API array. */
+export function selectLunchSlot(slotId: string): string[] {
+  return [slotId];
 }

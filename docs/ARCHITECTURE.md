@@ -181,7 +181,7 @@ components. Existing Card/Button styles provide the common compact treatment.
 Me/Admin, registration, group reveal, connect, games, join, restore and privacy adopt
 this presentation without changing data flow, API calls or account capabilities.
 
-`registrationFlow.toggleDaySlot` enforces the single-day UI selection by keeping only slot IDs with the selected slot’s ISO date. RegisterPage uses a functional state update; calendar browsing and existing API behavior are unchanged.
+`registrationFlow.selectLunchSlot` returns a one-item slot ID array. RegisterPage replaces its selection on each time choice across all dates; repeated taps retain the selected time. Calendar browsing preserves the selection. The API array and backend behavior are unchanged.
 
 ### HACK-306 — table and arrival presentation (2026-10-29)
 GroupTable uses a three-by-three CSS grid with four MemberCard seats and a central
@@ -218,3 +218,8 @@ the original session intact. The switch also affects other tabs sharing localSto
 ### HACK-312 — My lunch refresh (2026-10-29)
 
 MePage composes existing Avatar, buttons, QrShare and ReturnLink with local semantic status, plan and buddy sections. Native details disclose secondary choices and unlink controls. All calls still use endpoints.ts; no polling, dependencies or backend changes. The games entry point is removed from this page.
+
+
+### HACK-312 — final local integration (2026-10-29)
+
+Deployment user data now reads the Gemini key from SSM /lunch2/gemini-api-key and writes GEMINI_API_KEY for the existing card provider. scripts/deploy.sh accepts the same environment variable. No resources are deployed during local verification. build.sh performs a clean backend package and stops the previous Quarkus listener before starting the rebuilt app.

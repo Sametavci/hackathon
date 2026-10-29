@@ -537,7 +537,7 @@ Frontend visual simplification: common headings/avatars/disclosures and concise
 EN/DE copy only. No API, DTO, persistence, calendar generation, authorization or
 contact visibility changes. Privacy explanations remain available in disclosures.
 
-Registration UI clarification: time choices belong to one day; selecting another day’s time replaces old-day choices. The `slotIds` array, existing backend limits, endpoint behavior and wire types are unchanged.
+Registration UI clarification: exactly one lunch time is selected in total; selecting another time on any date replaces the previous choice. The frontend submits a one-item `slotIds` array. Existing backend limits, endpoint behavior and wire types are unchanged.
 
 ### HACK-306 — frontend arrival plan (2026-10-29)
 No endpoint, DTO, enum, config or persistence changes. Arrival instructions derive
@@ -574,3 +574,8 @@ replaces the previous session only on success. No endpoint or DTO changes.
 ### HACK-312 — My lunch refresh (2026-10-29)
 
 My lunch presentation update only: removes its table-games entry and reorganizes status, location, saved slots, buddy and account controls. Existing routes, game endpoints, DTOs, matching behavior and contact/privacy rules remain unchanged.
+
+
+### HACK-312 — final local integration (2026-10-29)
+
+Existing GEMINI_API_KEY configuration is now also wired through deployment and SSM /lunch2/gemini-api-key. Registration UI submits exactly one selected slot; server request arrays and existing limits remain unchanged. No endpoint, DTO or enum changes.

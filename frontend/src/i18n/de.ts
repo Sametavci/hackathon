@@ -1,7 +1,7 @@
 import type { MessageKey } from './en';
 
 export const de = {
-  "register.oneDayHint": "Wähle Zeiten für einen Tag.",
+  "register.oneDayHint": "Wähle einen Tag und ein Zeitfenster.",
   "ui.admin": "Admin",
   "ui.rules": "Spielregeln",
 

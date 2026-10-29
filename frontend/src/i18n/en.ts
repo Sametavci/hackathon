@@ -1,5 +1,5 @@
 export const en = {
-  "register.oneDayHint": "Choose times for one day.",
+  "register.oneDayHint": "Choose one day and one time slot.",
   "ui.admin": "Admin",
   "ui.rules": "How to play",
 

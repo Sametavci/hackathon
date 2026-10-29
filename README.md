@@ -85,7 +85,7 @@ No load balancer, NAT, database or domain. Cost: the instance is free-tier eligi
 ```
 brew install awscli && aws configure          # once: access key of an IAM user with admin rights
 ./scripts/deploy.sh                            # build + secrets in SSM + cdk bootstrap/deploy, prints http://<IP>
-ANTHROPIC_API_KEY=sk-... ./scripts/deploy.sh   # same, with AI conversation cards
+GEMINI_API_KEY=... ./scripts/deploy.sh        # same, with Gemini AI conversation cards
 ./scripts/destroy.sh                           # delete the stack when the hackathon is over
 cd infra && npm install && npm test           # offline tests of the CDK stack and the scripts (no AWS needed)
 ```
@@ -143,7 +143,7 @@ The frontend shares compact headings, profile avatars and quiet cards across adm
 and student pages. Secondary explanations and privacy sections expand on demand;
 registration, booking times, contact sharing and admin actions behave as before.
 
-Choose lunch times on one day. Selecting a time on another date replaces earlier-day choices; multiple time options on the same day are supported.
+Choose one lunch day and one time slot. Selecting another time on any date replaces the previous selection. The counter shows 0/1 or 1/1.
 
 The group reveal seats four members around a table. Meet outside your Mensa's
 main entrance five minutes before lunch, then find your table together. EN/DE
@@ -172,3 +172,8 @@ from your friend's phone; localhost links work only on the same computer.
 ### HACK-312 — My lunch refresh (2026-10-29)
 
 My lunch now uses a compact profile header, a green matching-status panel, Mensa/address and time cards, and a linked-buddy summary. Buddy management and private return-link details remain available. Table-game promotion has been removed from My lunch.
+
+
+### HACK-312 — final local integration (2026-10-29)
+
+The supplied registration QR assets are in qr/lunch2-qr.png and qr/lunch2-qr.svg. Run ./build.sh to build the real frontend and a clean backend package, replacing a previous local Quarkus listener on port 8080. Deployment uses GEMINI_API_KEY, stored in SSM at /lunch2/gemini-api-key.

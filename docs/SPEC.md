@@ -134,8 +134,8 @@ essential status, meeting details, contact-sharing controls, consent and destruc
 action confirmations remain visible when needed. EN/DE copy is concise. Backend,
 booking times, matching, permissions and session behavior are unchanged.
 
-### Registration: one lunch day
-The registration UI selects times on a single civil date. Selecting a time on another day replaces earlier-day selections; multiple times on the same day remain allowed. Browsing the calendar alone preserves the chosen slots.
+### Registration: one lunch time
+Registration allows one time slot in total. Selecting another time on any date replaces the previous selection; tapping the selected time keeps it selected. Browsing the calendar preserves the selection. EN/DE hints and the 0/1 or 1/1 counter reflect this limit.
 
 ### HACK-306 — table layout and arrival plan (2026-10-29)
 Four revealable member cards surround a central table. Meet outside the selected
@@ -165,3 +165,8 @@ unlink does not change an existing group. Matching is still an admin action.
 ### HACK-312 — My lunch refresh (2026-10-29)
 
 My lunch no longer displays the table-games section or link. A green status panel makes waiting/matched state and manual refresh visible; matched participants can open their group. The plan shows campus, Mensa/address and the first two selected times. Further choices and buddy unlink controls expand on demand; invite, return-link and confirmed deletion remain accessible. EN/DE and mobile layouts are preserved.
+
+
+### HACK-312 — final local integration (2026-10-29)
+
+Integrated delivery includes the My lunch redesign without games promotion, one selected lunch time, the supplied printable QR assets and Gemini deployment configuration. Invite, matching, group games and mutual connect keep their current behavior.

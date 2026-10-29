@@ -472,8 +472,8 @@ profiles and metrics were also checked. Each rendered route had one h1 and no
 horizontal page overflow. Browser data used only a separate temporary mock profile;
 the running backend was untouched. Preview runs separately on localhost:5190.
 
-### HACK-303 single-day time selection (user requested)
-Frontend registration replaces old-day slots when a time from another date is chosen. Multiple times within one day remain supported. Added same-day toggle and cross-day replacement regression tests; no backend or endpoint changes.
+### HACK-303 single-time selection (user requested)
+Supersedes the earlier single-day multiple-time behavior: registration allows one time slot total, replacing the previous selection on any date. Repeated taps retain the selected time. EN/DE hints and the /1 counter reflect the limit; API arrays and calendar browsing remain unchanged. Regression checks cover same-day replacement, cross-day replacement and repeated taps; verify frontend lint, tests and build. No backend or endpoint changes.
 
 ### HACK-306 follow-up — seating and arrival plan (2026-10-29)
 Dev 3 frontend scope: four revealable seats around a central table, EN/DE main-
@@ -531,3 +531,8 @@ and the production build passed (100 modules). Headless Chrome checked EN/DE at
 Mock-only checks passed refresh, delete confirmation/cancel, linked buddy display,
 unlink, invite QR/link creation and matched group navigation availability. The
 packaged app on localhost:8080 serves the new assets; API ping returns {"ok":true}.
+
+
+### HACK-312 — final local integration (2026-10-29)
+
+User requested complete local Git integration into main. Audited all four worktrees, every local branch and all three stashes. The two older stashes are earlier snapshots of HACK-303 already integrated through 0b80d4c and subsequent main commits; do not reapply stale UI/backend files. Restore the latest stash single-time registration and clean local runner changes. Integrate the remaining HACK-304 Gemini deployment/SSM and demo-documentation fixes while retaining the newer HACK-310 buddy implementation. Include both supplied QR assets and the HACK-312 page refresh. Existing stash backups are retained.
