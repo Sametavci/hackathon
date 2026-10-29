@@ -10,6 +10,7 @@ import ConnectPage from './pages/ConnectPage';
 import PrivacyPage from './pages/PrivacyPage';
 import AdminPage from './pages/AdminPage';
 import PlayPage from './pages/PlayPage';
+import GamesPage from './pages/GamesPage';
 
 // Every route from docs/API_CONTRACT.md §6 is wired here once, so nobody else needs to edit this file.
 export default function App() {
@@ -26,6 +27,8 @@ export default function App() {
           <Route path="/group/:groupId/connect" element={<ConnectPage />} />
           <Route path="/group/:groupId/play" element={<PlayPage />} />
           <Route path="/group/:groupId/play/:gameId" element={<PlayPage />} />
+          <Route path="/games" element={<GamesPage />} />
+          <Route path="/games/:gameId" element={<GamesPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/admin" element={<AdminPage />} />
         </Route>
