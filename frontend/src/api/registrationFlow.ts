@@ -25,3 +25,8 @@ export function createAutoAdvance(advance: (next: number) => void, delay = 220) 
     cancel(): void { clearTimeout(timer); timer = undefined; },
   };
 }
+
+/** Select exactly one lunch time across all dates, using the existing API array. */
+export function selectLunchSlot(slotId: string): string[] {
+  return [slotId];
+}

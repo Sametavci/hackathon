@@ -14,9 +14,16 @@ describe('Mensa availability', () => {
     expect(defaultMensaId('WUERZBURG')).toBe('WUERZBURG_ROENTGENRING');
     expect(defaultMensaId('SCHWEINFURT')).toBe('SCHWEINFURT_THWS');
   });
-  it('uses unique shared slot IDs and keeps five weekdays even when the window begins on Saturday', () => {
+  it('keeps weekday availability across months without changing service times', () => {
     const catalog = createMensaCatalog('2026-11-07');
-    expect([...new Set(catalog.slots.map(s => s.date))]).toEqual(['2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13']);
+    const dates = [...new Set(catalog.slots.map(s => s.date))];
+    expect(dates[0]).toBe('2026-11-09');
+    expect(dates).toContain('2026-12-15');
+    expect(dates).toContain('2027-10-29');
+    expect(dates.every(date => ![0, 6].includes(new Date(`${date}T12:00:00Z`).getUTCDay()))).toBe(true);
+    const hubland = catalog.mensas.find(m => m.id === 'WUERZBURG_HUBLAND_SUED') ?? catalog.mensas.find(m => m.name.includes('Hubland'))!;
+    expect(hubland.slotIds.filter(id => id.startsWith('2026-12-15')).map(id => id.slice(11)))
+      .toEqual(hubland.slotIds.filter(id => id.startsWith('2026-11-10')).map(id => id.slice(11)));
     expect(new Set(slots.map(s => s.id)).size).toBe(slots.length);
   });
   it.each(mensas.map(m => [m.id, m] as const))('%s provides only 45-minute lunches within service hours', (_, mensa) => {

@@ -41,8 +41,9 @@ public class MensaService {
             rows = mapper.readValue(stream, new TypeReference<List<Mensa>>() {});
         } catch (IOException e) { throw new UncheckedIOException(e); }
         List<LocalDate> days = new ArrayList<>();
-        LocalDate date = LocalDate.parse(startDate);
-        while (days.size() < 5) {
+        LocalDate date = SlotService.startDate(startDate);
+        LocalDate end = date.plusDays(SlotService.BOOKING_DAYS);
+        while (date.isBefore(end)) {
             if (date.getDayOfWeek().getValue() <= 5) days.add(date);
             date = date.plusDays(1);
         }
