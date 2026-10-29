@@ -103,6 +103,49 @@ describe('stateful demo API', () => {
     await expect(mockRequest('/me', auth)).rejects.toMatchObject({ status: 401 });
     await expect(mockRequest('/admin/seed', { ...admin, adminKey: 'wrong' })).rejects.toMatchObject({ status: 401 });
   });
+  it('resets all mock data, revokes old links and preserves unrelated storage and admin credentials', async () => {
+    vi.stubGlobal('sessionStorage', memoryStorage());
+    sessionStorage.setItem('lunch2.adminKey', 'dev-admin-key');
+    localStorage.setItem('unrelated', 'keep');
+    const { a, b, group } = await lunch();
+    const invite = await mockRequest<InviteResponse>('/me/invite', { ...auth, method: 'POST' });
+    await signup('Linked', { inviteCode: invite.code });
+    const path = `/groups/${group}/connections`;
+    await mockRequest(`${path}/${b.me.id}`, { ...auth, method: 'PUT', body: { choice: 'YES' } });
+    setToken(b.accessToken);
+    await mockRequest(`${path}/${a.me.id}`, { ...auth, method: 'PUT', body: { choice: 'YES' } });
+    await mockRequest(`${path}/${a.me.id}/contact`, { ...auth, method: 'PUT', body: { contact: 'discord demo' } });
+    await expect(mockRequest<void>('/admin/reset', admin)).resolves.toBeUndefined();
+    const stats = await mockRequest<StatsResponse>('/admin/stats', admin);
+    expect(stats).toEqual({ registrations: { DOMESTIC: 0, INTERNATIONAL: 0 }, byCampus: { WUERZBURG: 0, SCHWEINFURT: 0 },
+      matched: 0, waiting: 0, matchRate: 0, groups: 0, friendPairs: 0, mutualConnections: 0 });
+    expect(localStorage.getItem('unrelated')).toBe('keep');
+    expect(sessionStorage.getItem('lunch2.adminKey')).toBe('dev-admin-key');
+    for (const token of [a.accessToken, b.accessToken]) {
+      setToken(token);
+      await expect(mockRequest('/me', auth)).rejects.toMatchObject({ status: 401, code: 'UNAUTHORIZED' });
+    }
+    await expect(mockRequest(`/invites/${invite.code}`)).rejects.toMatchObject({ status: 404 });
+    const fresh = await signup('Fresh'); setToken(fresh.accessToken);
+    await expect(mockRequest(`/groups/${group}`, auth)).rejects.toMatchObject({ status: 404 });
+    expect(fresh.me.friend).toBeNull();
+  });
+  it('rejects unauthorized resets without changing data', async () => {
+    const a = await signup('Lena'); setToken(a.accessToken);
+    const before = localStorage.getItem('lunch2.mock.v1');
+    for (const options of [{ method: 'POST' } as const, { ...admin, adminKey: 'wrong' }]) {
+      await expect(mockRequest('/admin/reset', options)).rejects.toMatchObject({ status: 401, code: 'UNAUTHORIZED' });
+      expect(localStorage.getItem('lunch2.mock.v1')).toBe(before);
+    }
+    expect((await mockRequest<MeResponse>('/me', auth)).id).toBe(a.me.id);
+  });
+  it('supports repeated reset of an empty store and seeding again afterwards', async () => {
+    await expect(mockRequest<void>('/admin/reset', admin)).resolves.toBeUndefined();
+    await expect(mockRequest<void>('/admin/reset', admin)).resolves.toBeUndefined();
+    const seeded = await mockRequest<SeedResponse>('/admin/seed', admin);
+    expect(seeded.participants.length).toBeGreaterThan(0);
+    expect((await mockRequest<StatsResponse>('/admin/stats', admin)).waiting).toBe(seeded.participants.length);
+  });
 });
 
 
