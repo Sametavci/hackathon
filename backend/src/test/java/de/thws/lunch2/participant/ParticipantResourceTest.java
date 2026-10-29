@@ -171,10 +171,10 @@ class ParticipantResourceTest {
     }
 
     @Test
-    void suppliedInviteUsesTheNoOpHookUntilHack105() {
+    void unknownInviteIsRejectedWithoutSaving() {
         var request = payload();
         request.put("inviteCode", "K7Q2M9XA3P");
-        register(request).then().statusCode(201).body("me.friend", is((Object) null));
+        assertRejected(request, "INVITE_INVALID", null, 404);
     }
 
     private Map<String, Object> payload() {
@@ -200,8 +200,12 @@ class ParticipantResourceTest {
     }
 
     private void assertRejected(Map<String, Object> request, String code, String field) {
+        assertRejected(request, code, field, 400);
+    }
+
+    private void assertRejected(Map<String, Object> request, String code, String field, int status) {
         int before = participants.findAll().size();
-        var response = register(request).then().statusCode(400).contentType(ContentType.JSON)
+        var response = register(request).then().statusCode(status).contentType(ContentType.JSON)
                 .body("error.code", is(code)).extract().jsonPath();
         assertEquals(Set.of("error"), response.getMap("").keySet());
         assertEquals(Set.of("code", "message", "details"), response.getMap("error").keySet());
