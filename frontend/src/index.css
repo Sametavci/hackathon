@@ -38,10 +38,10 @@
   .lunch-orbit { position: absolute; inset: 8% 2%; border: 1px dashed theme('colors.line'); border-radius: 50%; transform: rotate(-15deg); }
   .lunch-table { position: absolute; inset: 21% 20%; border-radius: 48%; background: theme('colors.brand.DEFAULT'); transform: rotate(-12deg); box-shadow: 0 16px 0 theme('colors.brand.soft'); }
   .lunch-seat { position: absolute; display: grid; place-items: center; width: 21%; aspect-ratio: 1; border: 7px solid white; border-radius: 50%; z-index: 1; }
-  .lunch-seat-top { top: 0; left: 39.5%; background: theme('colors.accent'); transform: rotate(-10deg); }
+  .lunch-seat-top { top: 0; left: 39.5%; background: theme('colors.rose.200'); transform: rotate(-10deg); }
   .lunch-seat-right { top: 37%; right: 0; background: theme('colors.brand.soft'); transform: rotate(12deg); }
   .lunch-seat-bottom { bottom: 0; left: 39.5%; background: theme('colors.ink.DEFAULT'); color: white; transform: rotate(10deg); }
-  .lunch-seat-left { top: 37%; left: 0; background: theme('colors.accent'); transform: rotate(-14deg); }
+  .lunch-seat-left { top: 37%; left: 0; background: theme('colors.sky.200'); transform: rotate(-14deg); }
   .lunch-face { position: relative; display: block; width: 43%; height: 43%; border-bottom: 2px solid currentColor; border-radius: 0 0 50% 50%; }
   .lunch-face::before, .lunch-face::after { content: ''; position: absolute; top: 20%; width: 3px; height: 4px; border-radius: 50%; background: currentColor; }
   .lunch-face::before { left: 18%; } .lunch-face::after { right: 18%; }

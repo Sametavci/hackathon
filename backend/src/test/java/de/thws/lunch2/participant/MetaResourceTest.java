@@ -43,8 +43,12 @@ class MetaResourceTest {
     void slotsHaveLocalIdsChronologicalOrderAndContractShape() {
         List<Map<String, String>> slots = given().when().get("/api/meta").then().statusCode(200)
                 .extract().jsonPath().getList("slots");
-        assertEquals(65, slots.size());
-        assertEquals(5, slots.stream().map(slot -> slot.get("date")).distinct().count());
+        // Test profile pins the start to 2026-11-02; 13 Mensa slot times per weekday for about a year.
+        long days = slots.stream().map(slot -> slot.get("date")).distinct().count();
+        assertEquals(LocalDate.parse("2026-11-02").datesUntil(LocalDate.parse("2026-11-02").plusDays(366))
+                .filter(d -> d.getDayOfWeek() != DayOfWeek.SATURDAY && d.getDayOfWeek() != DayOfWeek.SUNDAY).count(), days);
+        assertEquals(days * 13, slots.size());
+        assertEquals("2026-11-02", slots.getFirst().get("date"));
         List<String> ids = slots.stream().map(slot -> slot.get("id")).toList();
         assertEquals(ids.stream().sorted().toList(), ids);
         for (var slot : slots) {

@@ -416,6 +416,8 @@ headline timer suspension/resume/cleanup tests; mobile/desktop browser checks in
 languages, including form-state preservation.
 
 ### HACK-309 follow-up — frontend polish (2026-10-29)
+Landing palette follow-up: replace the two yellow faces with pastel rose (top) and sky blue (left); retain the existing motion.
+
 User-approved coordinated scope covers Dev 3 frontend components, registration,
 translations and tests plus the necessary Dev 1 documentation updates in SPEC,
 ARCHITECTURE, API_CONTRACT, TASKS and README. No other ownership scope is extended.
@@ -469,3 +471,17 @@ language/interest/calendar steps, review, revealed group cards, populated admin
 profiles and metrics were also checked. Each rendered route had one h1 and no
 horizontal page overflow. Browser data used only a separate temporary mock profile;
 the running backend was untouched. Preview runs separately on localhost:5190.
+
+### HACK-303 single-day time selection (user requested)
+Frontend registration replaces old-day slots when a time from another date is chosen. Multiple times within one day remain supported. Added same-day toggle and cross-day replacement regression tests; no backend or endpoint changes.
+
+### HACK-306 follow-up — seating and arrival plan (2026-10-29)
+Dev 3 frontend scope: four revealable seats around a central table, EN/DE main-
+entrance instructions five minutes before lunch, original slot/venue, sequential
+mock tables. Required docs updated. No backend ownership transfer. Dev 2 follow-up:
+assign persisted sequential labels for real groups through existing location text.
+Legacy groups retain “Your table”. Verification: frontend lint, tests and build.
+Verification completed: `npm run lint` passed; `npm test` passed 17 files / 113 tests;
+`npm run build` passed (96 modules). Headless Chrome checked EN/DE at 375 px:
+four seats, all four tap reveals and no horizontal overflow. Screenshot reviewed.
+Existing game SSR tests emit React Router useLayoutEffect warnings, without failures.

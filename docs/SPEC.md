@@ -86,7 +86,8 @@ Registration balance D:I, registration → match conversion, attendance (future:
 
 The centered landing shuffles the two headline rows independently without consecutive repeats every
 1.8–2.8 seconds. Its four-person table rotates every 16 seconds, with independent
-staggered face gestures. There is no manual pause control; reduced-motion preference
+staggered face gestures. The two formerly yellow faces use pastel rose (top) and sky blue (left).
+There is no manual pause control; reduced-motion preference
 and hidden-tab suspension stop motion without moving the CTA. Headline pairs share
 a centered sizing area so German copy stays aligned without extra internal gaps.
 All frontend screens, including Play Together, Connect and Admin, support English
@@ -132,3 +133,14 @@ Group matching explanations, game rules and full privacy sections are expandable
 essential status, meeting details, contact-sharing controls, consent and destructive
 action confirmations remain visible when needed. EN/DE copy is concise. Backend,
 booking times, matching, permissions and session behavior are unchanged.
+
+### Registration: one lunch day
+The registration UI selects times on a single civil date. Selecting a time on another day replaces earlier-day selections; multiple times on the same day remain allowed. Browsing the calendar alone preserves the chosen slots.
+
+### HACK-306 — table layout and arrival plan (2026-10-29)
+Four revealable member cards surround a central table. Meet outside the selected
+Mensa's main entrance five minutes before the local lunch start, then find the
+table together. Keep lunch date/time and full venue/address visible in EN/DE.
+Mock matching assigns Table 1, 2, 3 across stored groups; reset restarts numbering.
+Existing unnumbered real groups display “Your table”. Server numbering is a Dev 2
+follow-up. Table numbers are group labels, not physical reservations.

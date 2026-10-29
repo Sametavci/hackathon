@@ -499,6 +499,8 @@ Sources: [Würzburg listing](https://www.swerk-wue.de/wuerzburg/essen-trinken/me
 
 ## 9. Frontend locale presentation (HACK-309, 2026-10-29)
 
+Landing face palette changes (rose/sky replacing the two yellow faces) affect CSS only and require no API changes.
+
 English/Deutsch is a browser-side presentation preference (`lunch2.locale`). No
 endpoint, request/response field, enum, matching language or saved backend value
 changes. Catalog IDs and known status/error codes are localized for display. Card
@@ -534,3 +536,13 @@ Brand icon update: frontend presentation only; API payloads, identifiers and end
 Frontend visual simplification: common headings/avatars/disclosures and concise
 EN/DE copy only. No API, DTO, persistence, calendar generation, authorization or
 contact visibility changes. Privacy explanations remain available in disclosures.
+
+Registration UI clarification: time choices belong to one day; selecting another day’s time replaces old-day choices. The `slotIds` array, existing backend limits, endpoint behavior and wire types are unchanged.
+
+### HACK-306 — frontend arrival plan (2026-10-29)
+No endpoint, DTO, enum, config or persistence changes. Arrival instructions derive
+from slot.date/start: outside the Mensa main entrance, five minutes early. Mock
+location strings append ` · Lunch² Table N`, numbered across stored groups from 1
+until reset. The frontend localizes that suffix and uses “Your table” for legacy
+locations. Real matching locations remain unchanged pending the Dev 2 follow-up;
+client-local numbers are never invented for real participants.

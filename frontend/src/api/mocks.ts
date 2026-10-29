@@ -90,7 +90,7 @@ function match(state: MockState): MatchRunResponse {
         if (!languages.length || people.some(p => pairOf(state, p.id)?.some(id => !ids.includes(id)))) continue;
         const interests = mockMeta.interests.map(i => i.id).filter(id => people.filter(p => p.interests.includes(id)).length >= 2).sort((x, y) => people.filter(p => p.interests.includes(y)).length - people.filter(p => p.interests.includes(x)).length || x.localeCompare(y, 'en'));
         const groupId = crypto.randomUUID();
-        state.groups[groupId] = { id: groupId, campus: campus.id, slot, startsAt: `${slot.date}T${slot.start}:00+01:00`, location: `${mensa.name} · ${mensa.address}`,
+        state.groups[groupId] = { id: groupId, campus: campus.id, slot, startsAt: `${slot.date}T${slot.start}:00+01:00`, location: `${mensa.name} · ${mensa.address} · Lunch² Table ${Object.keys(state.groups).length + 1}`,
           members: people.map(p => ({ id: p.id, displayName: p.displayName, interests: p.interests, isMe: false, isMyFriend: false })), sharedInterests: interests, commonLanguages: languages,
           whyThisGroup: ['A lunch slot that works for all four of you.', `Everyone speaks ${mockMeta.languages.find(l => l.code === languages[0])?.label ?? languages[0]}.`] };
         people.forEach(p => { p.matchStatus = 'MATCHED'; p.groupId = groupId; p.waitingReason = null; });

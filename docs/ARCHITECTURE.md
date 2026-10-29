@@ -137,6 +137,8 @@ Existing group location strings remain intact; new groups store the catalog name
 
 ## Frontend locale and landing motion (HACK-309, 2026-10-29)
 
+Landing face colors are scoped to `.lunch-seat-top` (rose-200) and `.lunch-seat-left` (sky-200) in `index.css`.
+
 `frontend/src/i18n/index.ts` owns the locale and exposes a `useSyncExternalStore`
 subscription through `useI18n`. Typed `en.ts`/`de.ts` dictionaries require matching
 keys; existing page/game string modules delegate to this shared dictionary.
@@ -178,3 +180,13 @@ Frontend presentation adds shared PageHeading, Avatar and native Disclosure
 components. Existing Card/Button styles provide the common compact treatment.
 Me/Admin, registration, group reveal, connect, games, join, restore and privacy adopt
 this presentation without changing data flow, API calls or account capabilities.
+
+`registrationFlow.toggleDaySlot` enforces the single-day UI selection by keeping only slot IDs with the selected slot’s ISO date. RegisterPage uses a functional state update; calendar browsing and existing API behavior are unchanged.
+
+### HACK-306 — table and arrival presentation (2026-10-29)
+GroupTable uses a three-by-three CSS grid with four MemberCard seats and a central
+table. Keyboard reveals and reduced-motion behavior remain. tablePlan parses an
+optional trailing ` · Lunch² Table N` from location, preserving the venue, and
+subtracts five civil minutes from slot.date/start, including midnight rollover.
+Mocks allocate numbers from stored group count. No backend files change; Dev 2
+must implement persisted real numbering before numbers work across real devices.

@@ -111,6 +111,8 @@ Team workflow, ownership and the ticket queue for each developer: `docs/TASKS.md
 
 ## Interface languages and landing animation
 
+The landing table's formerly yellow faces now use pastel rose and sky blue.
+
 Choose English or Deutsch from the single-flag menu in the header. The preference is saved in this browser;
 on first use a German primary browser language selects Deutsch, otherwise English.
 Language changes preserve your current registration, session and loaded pages.
@@ -140,3 +142,11 @@ The header and browser tab share the Lunch² table icon: four seats and two plat
 The frontend shares compact headings, profile avatars and quiet cards across admin
 and student pages. Secondary explanations and privacy sections expand on demand;
 registration, booking times, contact sharing and admin actions behave as before.
+
+Choose lunch times on one day. Selecting a time on another date replaces earlier-day choices; multiple time options on the same day are supported.
+
+The group reveal seats four members around a table. Meet outside your Mensa's
+main entrance five minutes before lunch, then find your table together. EN/DE
+arrival and lunch times stay visible. Mock matching numbers groups Table 1, 2, 3
+until reset; real groups show “Your table” until Dev 2 adds server numbering.
+These are group labels, not physical table reservations.

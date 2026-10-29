@@ -9,8 +9,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class MensaCatalogTest {
     @Test void eventWindowSkipsWeekendsAndCrossesMonthBoundaries() {
         var catalog = new MensaService(new ObjectMapper(), "2026-10-31", List.of("11:30", "12:15", "13:00"));
-        assertEquals(List.of("2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"),
-                catalog.slots().stream().map(SlotService.Slot::date).distinct().sorted().toList());
+        List<String> dates = catalog.slots().stream().map(SlotService.Slot::date).distinct().sorted().toList();
+        assertEquals(List.of("2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"), dates.subList(0, 5));
+        assertEquals(SlotServiceTest.weekdays(java.time.LocalDate.parse("2026-10-31")).stream().map(Object::toString).toList(), dates);
     }
     @Test void forbidsStartingAtFoodCutoffAndAllowsEndingExactlyAtClosing() {
         var catalog = new MensaService(new ObjectMapper(), "2026-11-02", List.of("11:30", "12:15", "13:00"));
