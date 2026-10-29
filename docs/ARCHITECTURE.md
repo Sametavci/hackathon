@@ -160,3 +160,13 @@ A missing/inconsistent preview blocks inherited registration rather than guessin
 BuddyFlow contains plan validation and wizard steps. QrShare uses existing qrcode.react,
 Web Share and clipboard (manual selection fallback). MePage reads current buddy state
 with Refresh, and unlink reloads it; no polling or existing-user linking endpoint.
+
+Buddy session correction: JoinPage never substitutes the saved session's My lunch
+for a valid invitation. BuddySessionChoice offers an explicit different-person route
+(register?invite=CODE&new=1) and the old participant's private return-link control.
+RegisterPage validates the public invite even with an existing token; without new=1
+it shows the same identity choice. The name-first buddy wizard uses an explicit step
+sequence (name -> category -> languages -> interests -> study -> slots -> consent).
+POST /participants remains unauthenticated and creates a new participant. Only its
+successful response replaces the active browser token; failed/cancelled forms leave
+the original session intact. The switch also affects other tabs sharing localStorage.

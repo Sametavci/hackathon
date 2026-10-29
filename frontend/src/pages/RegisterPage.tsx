@@ -4,7 +4,9 @@ import { ApiError } from '../api/client';
 import { getInvite, getMeta, registerParticipant } from '../api/endpoints';
 import { getToken, setToken } from '../api/session';
 import type { Category, Campus, FieldError, InvitePreview, RegistrationRequest } from '../api/types';
-import { buddySteps, hasBuddyPlan } from '../api/buddyFlow';
+import { buddySteps, hasBuddyPlan, nextRegistrationStep } from '../api/buddyFlow';
+import BuddySessionChoice from '../components/BuddySessionChoice';
+import ReturnLink from '../components/ReturnLink';
 import { validateRegistration } from '../api/validation';
 import { createAutoAdvance, errorsForStep, isAutomaticStep, registrationSteps, stepForField } from '../api/registrationFlow';
 import Button, { buttonClasses } from '../components/Button';
@@ -23,14 +25,16 @@ const summaryLabels: MessageKey[] = ['register.summaryCampus', 'register.summary
 export default function RegisterPage() {
   const [params] = useSearchParams();
   const code = params.get('invite');
+  const newParticipant = params.get('new') === '1';
   const { t } = useI18n();
-  const invite = useResource(`invite:${code}`, () => getInvite(code!), !!code && !getToken());
-  const meta = useResource('buddy-meta', getMeta, !!code && !getToken());
-  if (!code || getToken()) return <RegistrationForm key="solo" />;
+  const invite = useResource(`invite:${code}`, () => getInvite(code!), !!code);
+  const meta = useResource('buddy-meta', getMeta, !!code);
+  if (!code) return <RegistrationForm key="solo" />;
   if (invite.error || (invite.data && (!invite.data.valid || invite.data.inviterMatchStatus === 'MATCHED'))) return <Card className="space-y-4"><p>{t(invite.data?.inviterMatchStatus === 'MATCHED' ? 'buddy.matched' : invite.data?.valid === false ? 'buddy.used' : 'buddy.unavailable')}</p>{!!invite.error && <ErrorBanner error={invite.error} onRetry={invite.reload} />}<Link className={buttonClasses} to="/register">{t('buddy.solo')}</Link></Card>;
   if (!invite.data) return <LoadState {...invite} />;
   if (!meta.data) return <LoadState {...meta} />;
   if (!hasBuddyPlan(invite.data, meta.data)) return <Card className="space-y-4"><p>{t('buddy.unavailable')}</p><Link className={buttonClasses} to="/register">{t('buddy.solo')}</Link></Card>;
+  if (getToken() && !newParticipant) return <Card className="space-y-4"><h1>{t('buddy.invited', { name: invite.data.inviterDisplayName })}</h1><BuddySessionChoice code={code} /></Card>;
   return <RegistrationForm key={code} invite={invite.data} />;
 }
 
@@ -39,7 +43,7 @@ function RegistrationForm({ invite }: { invite?: InvitePreview }) {
   const meta = useResource('meta', getMeta);
   const navigate = useNavigate();
   const steps = buddySteps(!!invite);
-  const [step, setStep] = useState(invite ? 1 : 0);
+  const [step, setStep] = useState(invite ? 7 : 0);
   const [name, setName] = useState('');
   const [category, setCategory] = useState<Category | ''>('');
   const [campus, setCampus] = useState<Campus | ''>(invite?.campus ?? '');
@@ -57,7 +61,7 @@ function RegistrationForm({ invite }: { invite?: InvitePreview }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const errorHeading = useRef<HTMLDivElement>(null);
   const pending = useRef(false);
-  const autoAdvance = useMemo(() => createAutoAdvance(next => setStep(next === 5 && invite ? 6 : next)), [invite]);
+  const autoAdvance = useMemo(() => createAutoAdvance(setStep), []);
   useEffect(() => {
     heading.current?.focus({ preventScroll: true });
     return () => autoAdvance.cancel();
@@ -69,7 +73,7 @@ function RegistrationForm({ invite }: { invite?: InvitePreview }) {
   function go(next: number) { autoAdvance.cancel(); setErrors([]); setError(null); setStep(next); }
   function selectAndAdvance(select: () => void) {
     if (autoAdvance.pending()) return;
-    select(); setErrors([]); setError(null); autoAdvance.schedule(step + 1);
+    select(); setErrors([]); setError(null); autoAdvance.schedule(nextRegistrationStep(step, !!invite));
   }
   function clearSchedule() { if (slots.length) setScheduleChanged(true); setSlots([]); setDay(''); }
   function chooseCampus(value: Campus) {
@@ -88,7 +92,7 @@ function RegistrationForm({ invite }: { invite?: InvitePreview }) {
       if (step === 8) setStep(stepForField(validation[0].field));
       requestAnimationFrame(() => errorHeading.current?.focus()); return;
     }
-    if (step < 8) { go(step + 1); return; }
+    if (step < 8) { go(nextRegistrationStep(step, !!invite)); return; }
     pending.current = true; setBusy(true);
     try {
       if (invite) {
@@ -104,7 +108,7 @@ function RegistrationForm({ invite }: { invite?: InvitePreview }) {
       requestAnimationFrame(() => errorHeading.current?.focus());
     } finally { pending.current = false; setBusy(false); }
   }
-  if (getToken()) return <Card className="space-y-4"><p>{t('register.existing')}</p><Link className={buttonClasses} to="/me">{t('landing.return')}</Link></Card>;
+  if (getToken() && !invite) return <Card className="space-y-4"><p>{t('register.existing')}</p><Link className={buttonClasses} to="/me">{t('landing.return')}</Link></Card>;
   if (!meta.data) return <LoadState {...meta} />;
   const catalog = meta.data;
   const mensas = (catalog.mensas ?? []).filter(m => m.campus === campus);
@@ -125,6 +129,7 @@ function RegistrationForm({ invite }: { invite?: InvitePreview }) {
   ];
   return <div className="space-y-5">
     {invite && <Card className="space-y-2 !bg-brand-soft"><p className="font-semibold">{t('buddy.invited', { name: invite.inviterDisplayName })}</p><p className="text-sm text-ink-muted">{t('buddy.plan')}</p><Link to="/register" className="inline-flex min-h-11 items-center text-sm underline">{t('buddy.solo')}</Link></Card>}
+    {invite && getToken() && <><p className="text-sm text-ink-muted">{t('buddy.sessionKept')}</p><ReturnLink /></>}
     <div className="flex min-h-11 items-center gap-3">
       {steps.indexOf(step) > 0 ? <button type="button" disabled={busy} onClick={() => go(steps[steps.indexOf(step) - 1])} aria-label={t('register.back')} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-line text-xl hover:bg-brand-soft disabled:opacity-50">←</button> : <span className="h-11 w-2" aria-hidden="true" />}
       <div role="progressbar" aria-label={t('register.title')} aria-valuemin={0} aria-valuemax={steps.length} aria-valuenow={steps.indexOf(step) + 1} aria-valuetext={`${t('register.step')} ${steps.indexOf(step) + 1} ${t('register.of')} ${steps.length}`} className="h-1.5 flex-1 overflow-hidden rounded-full bg-brand-soft">

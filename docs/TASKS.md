@@ -436,3 +436,15 @@ the installed JDK; verification ran outside sandbox after local socket/file oper
 were denied inside it. Browser walkthrough remains unverified: in-app browser could
 not reach localhost; Windows Computer Use stopped because it could not determine
 the current browser URL confidently. Manual mobile/phone walkthrough remains.
+
+HACK-310 follow-up — same-browser Join identity fix (2026-10-29): the previous
+getToken guard hid the invite and only offered the saved participant's lunch.
+Valid invitations now keep their preview and offer an explicit different-person
+registration with the invite preserved, including direct register links. Buddy
+registration starts with an empty nickname field. Explicit wizard navigation
+handles the reordered steps; previous credentials stay active until successful
+registration and a return-link control supports saving the old identity.
+Regression checks cover route preservation, name-first navigation, identity choice
+rendering and same-browser registration producing distinct participant IDs/tokens.
+Frontend build/lint passed; 89 Vitest tests passed with the English test environment
+(NODE_OPTIONS=--no-experimental-global-navigator). No backend code changed.

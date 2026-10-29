@@ -127,6 +127,10 @@ answers. If no times fit, they can register alone. Refresh My lunch to see the l
 buddy; admin matching places ACTIVE buddies in the same valid 2+2 group or keeps them
 waiting. Match us separately removes the link for future rounds, keeping existing groups.
 Invites do not hold your place before your friend registers. Already matched inviters,
-used/invalid links and already registered visitors receive explanations. Existing users
-cannot link two registrations. Set LUNCH2_PUBLIC_BASE_URL to the frontend URL reachable
+used/invalid links receive explanations. If the browser already has a registration,
+choose "Join as a different person" to create a new buddy with their own name, or
+return to the existing lunch. The buddy form asks for the new nickname first. Save
+the original private return link before completing the new registration: completion
+switches this browser and its other tabs to the new participant. Failed/cancelled
+registration keeps the original session. Existing users cannot link two registrations. Set LUNCH2_PUBLIC_BASE_URL to the frontend URL reachable
 from your friend's phone; localhost links work only on the same computer.

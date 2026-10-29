@@ -101,7 +101,11 @@ share/copy its URL or show its QR. The join page previews inviter name, campus, 
 and availability. Buddy registration inherits campus/Mensa and asks the buddy to select
 a nonempty subset of the inviter's slots; personal category, languages, interests,
 nickname and consent remain their own answers. No times fit -> explicit solo registration.
-Used/invalid invites, already matched inviters and existing signed-in registrations
-receive explanations and an appropriate solo/My lunch link. Existing registrations
-cannot be linked through this flow. Both profiles display buddy status and can unlink;
+Used/invalid invites and already matched inviters receive explanations and a solo
+registration option. With a saved browser session, valid invites still show the plan
+and offer "Join as a different person" alongside the existing My lunch link. Buddy
+registration asks for a new nickname first, then the remaining personal answers.
+The previous session stays active until successful registration; its private return
+link is available to save before switching. Existing registrations cannot be linked
+through this flow; joining as another person creates a distinct participant. Both profiles display buddy status and can unlink;
 unlink does not change an existing group. Matching is still an admin action.

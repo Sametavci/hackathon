@@ -102,6 +102,22 @@ describe('stateful demo API', () => {
     expect((await mockRequest<MeResponse>('/me', auth)).friend).toBeNull();
     setToken(a.accessToken); expect((await mockRequest<MeResponse>('/me', auth)).friend).toBeNull();
   });
+  it('creates a separate named buddy while the inviter is still signed in on the same browser', async () => {
+    const inviter = await signup('Lena'); setToken(inviter.accessToken);
+    const invite = await mockRequest<InviteResponse>('/me/invite', { ...auth, method: 'POST' });
+    await expect(signup('', { inviteCode: invite.code })).rejects.toMatchObject({ status: 400 });
+    expect(getToken()).toBe(inviter.accessToken);
+    expect((await mockRequest<InvitePreview>(`/invites/${invite.code}`)).valid).toBe(true);
+    const buddy = await signup('Sam', { inviteCode: invite.code });
+    expect(buddy.me.id).not.toBe(inviter.me.id);
+    expect(buddy.accessToken).not.toBe(inviter.accessToken);
+    expect(buddy.me.displayName).toBe('Sam');
+    expect(buddy.me.friend?.displayName).toBe('Lena');
+    expect(getToken()).toBe(inviter.accessToken);
+    expect(await mockRequest<MeResponse>('/me', auth)).toMatchObject({ id: inviter.me.id, displayName: 'Lena', friend: { displayName: 'Sam' } });
+    setToken(buddy.accessToken);
+    expect(await mockRequest<MeResponse>('/me', auth)).toMatchObject({ id: buddy.me.id, displayName: 'Sam', friend: { displayName: 'Lena' } });
+  });
   it('registers from a public buddy plan, matches together and unlinks without changing the group', async () => {
     const a = await signup('Lena'); setToken(a.accessToken);
     const invite = await mockRequest<InviteResponse>('/me/invite', { ...auth, method: 'POST' });

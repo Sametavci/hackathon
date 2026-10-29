@@ -1,7 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 import { getInvite, getMeta } from '../api/endpoints';
 import { getToken } from '../api/session';
-import { hasBuddyPlan } from '../api/buddyFlow';
+import { buddyRegistrationPath, hasBuddyPlan } from '../api/buddyFlow';
+import BuddySessionChoice from '../components/BuddySessionChoice';
 import { useResource } from '../hooks/useResource';
 import { formatSlot } from '../i18n/presentation';
 import LoadState from '../components/LoadState';
@@ -13,7 +14,6 @@ export default function JoinPage() {
   const { t } = useI18n();
   const invite = useResource(`invite:${code}`, () => getInvite(code));
   const meta = useResource('meta', getMeta);
-  if (getToken()) return <Card className="mt-6 space-y-4"><h1>{t('buddy.title')}</h1><p>{t('buddy.existing')}</p><Link to="/me" className={buttonClasses}>{t('landing.return')}</Link></Card>;
   if (invite.error) return <Card className="mt-6 space-y-4"><h1>{t('buddy.unavailable')}</h1><LoadState {...invite} /><Link to="/register" className={buttonClasses}>{t('buddy.solo')}</Link></Card>;
   if (!invite.data) return <LoadState {...invite} />;
   if (!meta.data) return <LoadState {...meta} />;
@@ -24,7 +24,7 @@ export default function JoinPage() {
     <p className="font-semibold">{meta.data.mensas?.find(m => m.id === data.mensaId)?.name}</p>
     <ul className="space-y-2 text-sm text-ink-muted">{(data.slotIds ?? []).map(id => <li key={id}>{formatSlot(meta.data!.slots.find(s => s.id === id) ?? id)}</li>)}</ul>
     <p className="text-sm text-ink-muted">{t(!data.valid ? 'buddy.used' : data.inviterMatchStatus === 'MATCHED' ? 'buddy.matched' : ready ? 'buddy.plan' : 'buddy.unavailable')}</p>
-    {ready && <Link to={`/register?invite=${encodeURIComponent(code)}`} className={`${buttonClasses} w-full`}>{t('buddy.join', { name: data.inviterDisplayName })}</Link>}
+    {ready && (getToken() ? <BuddySessionChoice code={code} /> : <Link to={buddyRegistrationPath(code)} className={`${buttonClasses} w-full`}>{t('buddy.join', { name: data.inviterDisplayName })}</Link>)}
     <Link to="/register" className="inline-flex min-h-11 items-center text-sm font-semibold underline">{t('buddy.solo')}</Link>
   </Card>;
 }

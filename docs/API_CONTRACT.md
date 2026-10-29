@@ -520,3 +520,10 @@ the buddy UI inherits campus/mensaId, asks for a subset of preview slotIds and p
 inviteCode. Existing compatibility checks and race responses remain unchanged; the
 backend does not silently override submitted preferences. E7 removes the link for
 future matching and preserves existing group assignments.
+
+Buddy session correction (frontend only): invite links do not authenticate as the
+inviter. An existing browser token must not bypass invited registration. The UI
+offers a different-person path using browser query parameter new=1 alongside
+invite=CODE; neither is an API field. A fresh nickname and the complete E2 request
+are required. E2 creates a distinct participant and returns its own token; the UI
+replaces the previous session only on success. No endpoint or DTO changes.
