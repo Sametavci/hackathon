@@ -15,10 +15,18 @@ import jakarta.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminResource {
     private final MatchService matching;
+    private final SeedService seeding;
 
     @Inject
-    public AdminResource(MatchService matching) {
+    public AdminResource(MatchService matching, SeedService seeding) {
         this.matching = matching;
+        this.seeding = seeding;
+    }
+
+    @POST
+    @Path("/seed")
+    public SeedResponse seed() {
+        return seeding.seed();
     }
 
     @POST

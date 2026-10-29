@@ -37,7 +37,7 @@
 | 401 | `UNAUTHORIZED` (missing/invalid token or admin key) |
 | 403 | `FORBIDDEN` (not a member of the group) |
 | 404 | `NOT_FOUND`, `INVITE_INVALID` |
-| 409 | `ALREADY_PAIRED`, `INVITE_USED`, `NOT_MUTUAL`, `NOT_MATCHED` |
+| 409 | `ALREADY_PAIRED`, `INVITE_USED`, `NOT_MUTUAL`, `NOT_MATCHED`, `DEMO_NOT_EMPTY` |
 | 500 | `INTERNAL` (never leak stack traces) |
 
 `message` is a human-readable English sentence safe to show in the UI.
@@ -259,6 +259,14 @@ Setting `NO` withdraws: also deletes my shared contact for that person. 409 `NOT
 ```json
 { "participants": [{ "id": "…", "displayName": "Mia (demo)", "campus": "WUERZBURG", "category": "DOMESTIC", "restoreUrl": "http://localhost:5173/#/back?t=…" }] }
 ```
+
+Requires `X-Admin-Key`; no request body is required. Disabled demo mode returns 403 `FORBIDDEN`.
+If participants, groups or friend pairs already exist, returns 409 `DEMO_NOT_EMPTY` without modifying data;
+an explicit reset is required before seeding again. Successful seeding returns 18 fictional participants.
+Restore links are returned once; only token hashes are persisted. Do not log these links.
+Slots use the first and second configured event weekdays (Monday/Tuesday with the default start date).
+The seed deliberately includes an active cross-campus friend pair to demonstrate the matching pre-check;
+this bypasses the normal registration compatibility check for that fictional edge case only.
 
 ### A2 `POST /api/admin/match` → 200 `MatchRunResponse`
 
