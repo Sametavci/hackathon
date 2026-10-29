@@ -6,8 +6,9 @@ import { clearSession, getToken, setToken } from '../api/session';
 import { buttonClasses } from '../components/Button';
 import ErrorBanner from '../components/ErrorBanner';
 import Spinner from '../components/Spinner';
-import { t } from '../i18n/en';
+import { useI18n } from '../i18n';
 export default function RestorePage() {
+  const { t } = useI18n();
   const [params] = useSearchParams();
   const token = useRef(params.get('t'));
   const started = useRef(false);

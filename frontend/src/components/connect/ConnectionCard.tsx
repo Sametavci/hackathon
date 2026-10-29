@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ConnectionItem } from '../../api/types';
 import { setConnection, shareContact, withdrawContact } from '../../api/endpoints';
 import { ApiError } from '../../api/client';
-import { t } from '../../pages/ConnectPage.strings';
+import { useI18n, type MessageKey } from '../../i18n';
 import Card from '../Card';
 import Button from '../Button';
 import ErrorBanner from '../ErrorBanner';
@@ -16,14 +16,15 @@ interface ConnectionCardProps {
 }
 
 export default function ConnectionCard({ item, groupId, disabled, onUpdate, onBusyChange, onStale }: ConnectionCardProps) {
+  const { t } = useI18n();
   const [contact, setContact] = useState(item.myContact ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
-  const [announcement, setAnnouncement] = useState('');
+  const [announcement, setAnnouncement] = useState<MessageKey | ''>('');
   const pending = useRef(false);
   useEffect(() => { setContact(item.myContact ?? ''); }, [item.myContact]);
 
-  async function update(action: () => Promise<ConnectionItem>, message: string) {
+  async function update(action: () => Promise<ConnectionItem>, message: MessageKey) {
     if (pending.current || disabled) return;
     pending.current = true;
     setBusy(true);
@@ -52,7 +53,7 @@ export default function ConnectionCard({ item, groupId, disabled, onUpdate, onBu
   return (
     <Card role="region" aria-labelledby={headingId} aria-busy={busy} className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id={headingId} className="min-w-0 break-words">{item.displayName}</h2>
+        <h2 id={headingId} className="min-w-0 break-words">{deleted ? t('connect.deleted') : item.displayName}</h2>
         {!deleted && <span role="status" className={`rounded-full px-3 py-2 text-xs font-semibold ${item.status === 'MUTUAL' ? 'bg-accent' : 'bg-brand-soft'}`}>
           {t(`connect.${item.status}`)}
         </span>}
@@ -67,7 +68,7 @@ export default function ConnectionCard({ item, groupId, disabled, onUpdate, onBu
             className="w-full"
             onClick={() => void update(
               () => setConnection(groupId, item.participantId, item.myChoice === 'YES' ? 'NO' : 'YES'),
-              t('connect.choiceSaved'),
+              'connect.choiceSaved',
             )}
           >{t(item.myChoice === 'YES' ? 'connect.no' : 'connect.yes')}</Button>
           {item.myChoice === 'YES' && <p id={`withdraw-hint-${item.participantId}`} className="text-xs leading-relaxed text-ink-muted">{t('connect.withdrawHint')}</p>}
@@ -77,7 +78,7 @@ export default function ConnectionCard({ item, groupId, disabled, onUpdate, onBu
               <p className="whitespace-pre-wrap break-words text-sm">{item.myContact}</p>
               {item.status !== 'MUTUAL' && <p className="text-xs leading-relaxed text-ink-muted">{t('connect.hiddenContact')}</p>}
               <Button disabled={locked} variant="secondary" className="w-full" onClick={() => void update(
-                () => withdrawContact(groupId, item.participantId), t('connect.contactWithdrawn'),
+                () => withdrawContact(groupId, item.participantId), 'connect.contactWithdrawn',
               )}>{t('connect.withdraw')}</Button>
             </div>
           )}
@@ -90,7 +91,7 @@ export default function ConnectionCard({ item, groupId, disabled, onUpdate, onBu
               <form className="space-y-3" onSubmit={event => {
                 event.preventDefault();
                 if (contact.trim() && contact.length <= 100) {
-                  void update(() => shareContact(groupId, item.participantId, contact), t('connect.contactSaved'));
+                  void update(() => shareContact(groupId, item.participantId, contact), 'connect.contactSaved');
                 }
               }}>
                 <label htmlFor={`contact-${item.participantId}`} className="block text-sm font-semibold">{t('connect.contact')}</label>
@@ -107,7 +108,7 @@ export default function ConnectionCard({ item, groupId, disabled, onUpdate, onBu
         </>
       )}
       {!!error && <ErrorBanner error={error} />}
-      <p role="status" className="text-sm text-ink-muted">{announcement}</p>
+      <p role="status" className="text-sm text-ink-muted">{announcement ? t(announcement) : ''}</p>
     </Card>
   );
 }

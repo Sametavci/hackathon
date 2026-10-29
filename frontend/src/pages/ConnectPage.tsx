@@ -3,12 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import { getConnections } from '../api/endpoints';
 import type { ConnectionItem } from '../api/types';
 import { useResource } from '../hooks/useResource';
-import { t } from './ConnectPage.strings';
+import { useI18n } from '../i18n';
 import Button, { buttonClasses } from '../components/Button';
 import LoadState from '../components/LoadState';
 import SessionGate from '../components/SessionGate';
 import ConnectionCard from '../components/connect/ConnectionCard';
 function ConnectContent({ groupId }: { groupId: string }) {
+  const { t } = useI18n();
   const resource = useResource(`connections-${groupId}`, () => getConnections(groupId));
   const [updates, setUpdates] = useState<Record<string, ConnectionItem>>({});
   const [pendingId, setPendingId] = useState<string | null>(null);

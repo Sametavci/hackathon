@@ -1,6 +1,6 @@
 import { clearSession, getToken } from './session';
 import type { FieldError } from './types';
-import { t } from '../i18n/en';
+import { t } from '../i18n';
 export class ApiError extends Error {
   constructor(public status: number, public code: string, message: string, public details: FieldError[] = []) { super(message); this.name = 'ApiError'; }
 }

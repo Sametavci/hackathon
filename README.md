@@ -108,3 +108,12 @@ infra/                    AWS CDK (TypeScript): VPC, security group, EC2, Elasti
 scripts/                  build-all.sh, deploy.sh, destroy.sh
 ```
 Team workflow, ownership and the ticket queue for each developer: `docs/TASKS.md`.
+
+## Interface languages and landing animation
+
+Choose English or Deutsch in the header. The preference is saved in this browser;
+on first use a German primary browser language selects Deutsch, otherwise English.
+Language changes preserve your current registration, session and loaded pages.
+Conversation questions keep the group's shared language.
+The centered landing animates headlines and a four-person table. Use its pause
+control to stop motion; reduced-motion settings and hidden tabs suspend animation.

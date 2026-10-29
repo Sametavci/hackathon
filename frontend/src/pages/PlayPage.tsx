@@ -3,12 +3,13 @@ import { getGroup } from '../api/endpoints';
 import { buttonClasses } from '../components/Button';
 import GameHub from '../components/games/GameHub';
 import { gameCatalog } from '../components/games/gameCatalog';
-import { t } from '../components/games/gameStrings';
+import { useI18n } from '../i18n';
 import LoadState from '../components/LoadState';
 import SessionGate from '../components/SessionGate';
 import { useResource } from '../hooks/useResource';
 
 function PlayContent({ groupId, gameId }: { groupId: string; gameId?: string }) {
+  const { t } = useI18n();
   // The existing member-only group API is the access check; no attendance/time gate.
   const group = useResource(`play-group-${groupId}`, () => getGroup(groupId));
   const base = `/group/${encodeURIComponent(groupId)}`;

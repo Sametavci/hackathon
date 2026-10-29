@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { t } from './en';
+import { t } from '.';
 
 describe('t', () => {
   it('returns the English string for a key', () => {

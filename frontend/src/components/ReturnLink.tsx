@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { restoreUrl } from '../api/session';
-import { t } from '../i18n/en';
+import { useI18n } from '../i18n';
 import Button from './Button';
 import Card from './Card';
 export default function ReturnLink() {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const [fallback, setFallback] = useState(false);
   const url = restoreUrl();

@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, type KeyboardEvent } from 'react';
-import { t } from '../i18n/en';
+import { useI18n } from '../i18n';
+import { formatDate as format } from '../i18n/presentation';
 
 interface Props {
   dates: string[];
@@ -8,9 +9,9 @@ interface Props {
   onChange: (date: string) => void;
 }
 
-const format = (date: string, options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('en-GB', { ...options, timeZone: 'UTC' }).format(new Date(`${date}T12:00:00Z`));
 
 export default function DateCarousel({ dates, value, selectedDates, onChange }: Props) {
+  const { t } = useI18n();
   const track = useRef<HTMLDivElement>(null);
   const settleTimer = useRef<ReturnType<typeof setTimeout>>();
   const current = useRef({ value, onChange });

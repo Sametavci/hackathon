@@ -2,9 +2,10 @@ import { Link } from 'react-router-dom';
 import Button, { buttonClasses } from '../Button';
 import Card from '../Card';
 import { gameCatalog } from './gameCatalog';
-import { t } from './gameStrings';
+import { useI18n } from '../../i18n';
 
 export default function GameHub({ groupId }: { groupId: string }) {
+  const { t } = useI18n();
   return <div className="space-y-5">
     <header className="space-y-3">
       <p className="eyebrow">{t('games.eyebrow')}</p>

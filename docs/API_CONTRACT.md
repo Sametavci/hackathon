@@ -487,3 +487,11 @@ Sources: [Würzburg listing](https://www.swerk-wue.de/wuerzburg/essen-trinken/me
 - Previous/next/skip/shuffle/finish/replay are local display actions. They never send
   answers, advance other phones, modify the cached server set or regenerate content.
 - Additional games with backend state are future contract work, not part of this prototype.
+
+## 9. Frontend locale presentation (HACK-309, 2026-10-29)
+
+English/Deutsch is a browser-side presentation preference (`lunch2.locale`). No
+endpoint, request/response field, enum, matching language or saved backend value
+changes. Catalog IDs and known status/error codes are localized for display. Card
+text remains exactly as returned in the group's shared language; user-provided
+names, contacts and Mensa addresses are preserved.
