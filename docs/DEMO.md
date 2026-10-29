@@ -22,7 +22,15 @@ Dev 1 supplies E1–E4 and E10–E13; Dev 2 supplies E8–E9 and A1–A4. E5–E
 
 Set `VITE_USE_MOCKS=false` in `frontend/.env.development.local`, start Quarkus with `cd backend && ./mvnw quarkus:dev`, and run Vite in another terminal. Vite proxies `/api` to port 8080. Check `curl -s http://localhost:8080/api/ping` returns `{"ok":true}`. API errors never silently fall back to mocks.
 
-**Open contract issue:** A3 (`POST /api/admin/reset`) does not define its success status/body. The Reset button and endpoint adapter stay blocked until Dev 1 specifies it. Do not use the existing reset/seed demo script as a verified flow until that issue is resolved.
+Admin credentials: copy `backend/.env.example` to `backend/.env`, replace the public example key with
+your own `openssl rand -hex 32` value, and start Quarkus from `backend/`. Enter that same value on Admin.
+Mock mode still uses `dev-admin-key`; custom backend credentials require `VITE_USE_MOCKS=false`.
+
+A3 (`POST /api/admin/reset`) returns 204 No Content. The Admin Reset button requires confirmation;
+success clears displayed results, private return links and the current participant session, while retaining
+the admin key in sessionStorage. An invalid key leaves data unchanged. Both real and mock adapters
+support this flow. Seed again after a successful reset; the script only performs seed → match and never
+implicitly resets an existing real database.
 
 ## Build one Quarkus application
 

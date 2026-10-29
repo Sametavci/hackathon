@@ -1,6 +1,10 @@
 .idea/
 .vscode/
 .DS_Store
+# Local credentials; examples are safe to commit.
+.env
+.env.*
+!.env.example
 *.log
 # runtime data of the JSON file store
 data/
