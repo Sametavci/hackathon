@@ -51,7 +51,7 @@ International students at THWS struggle to build local friendships, while German
 | F2 | `POST /api/me/invite` → link + QR + Web Share/copy; `#/join/:code` landing shows inviter name; pair compatibility check at registration |
 | F3 | Greedy best-scoring 2D+2I enumeration per campus/slot + validator + reason codes |
 | F4 | Card-flip reveal of 4 members (CSS only), why-this-group bullets, time/place |
-| F5 | Claude call → 5 JSON questions, 8 s timeout, persisted in group; deterministic fallback bank |
+| F5 | Gemini call → 5 JSON questions, 8 s timeout, persisted in group; deterministic fallback bank |
 | F6 | Per-member YES/NO toggle; mutual → contact text box; withdraw button |
 
 ### B.2 Explicitly excluded

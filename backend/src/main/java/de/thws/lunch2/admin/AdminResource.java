@@ -5,6 +5,7 @@ import de.thws.lunch2.matching.MatchRunResponse;
 import de.thws.lunch2.matching.MatchService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
@@ -16,11 +17,19 @@ import jakarta.ws.rs.core.Response;
 public class AdminResource {
     private final MatchService matching;
     private final SeedService seeding;
+    private final StatsService stats;
 
     @Inject
-    public AdminResource(MatchService matching, SeedService seeding) {
+    public AdminResource(MatchService matching, SeedService seeding, StatsService stats) {
         this.matching = matching;
         this.seeding = seeding;
+        this.stats = stats;
+    }
+
+    @GET
+    @Path("/stats")
+    public StatsResponse stats() {
+        return stats.get();
     }
 
     @POST
