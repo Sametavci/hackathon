@@ -1,0 +1,9 @@
+.idea/
+.vscode/
+.DS_Store
+*.log
+# runtime data of the JSON file store
+data/
+backend/data/
+# built SPA copied into Quarkus by scripts/build-all.sh (HACK-108)
+backend/src/main/resources/META-INF/resources/
