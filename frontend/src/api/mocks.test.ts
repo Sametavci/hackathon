@@ -1,0 +1,134 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { mockRequest } from './mocks';
+import { mockMeta } from './mockData';
+import { getToken, setToken } from './session';
+import { memoryStorage } from './testStorage';
+import type { ConnectionItem, GroupResponse, InvitePreview, InviteResponse, MatchRunResponse, MeResponse, RegistrationRequest, RegistrationResponse, SeedResponse, StatsResponse } from './types';
+const auth = { auth: 'participant' } as const;
+const admin = { auth: 'admin', adminKey: 'dev-admin-key', method: 'POST' } as const;
+function signup(name: string, changes: Partial<RegistrationRequest> = {}) {
+  return mockRequest<RegistrationResponse>('/participants', { method: 'POST', body: { displayName: name, category: 'DOMESTIC', campus: 'WUERZBURG', languages: ['en'], interests: ['travel'], slotIds: [mockMeta.slots[4].id], studyField: null, inviteCode: null, consent: true, ...changes } });
+}
+async function lunch() {
+  const a = await signup('Lena'); const b = await signup('Sam');
+  const c = await signup('Aiko', { category: 'INTERNATIONAL' }); const d = await signup('Omar', { category: 'INTERNATIONAL' });
+  const matched = await mockRequest<MatchRunResponse>('/admin/match', admin);
+  setToken(a.accessToken);
+  return { a, b, c, d, group: matched.groupsCreated[0].groupId };
+}
+beforeEach(() => { vi.stubGlobal('localStorage', memoryStorage()); vi.stubGlobal('window', { location: { origin: 'https://lunch.test', pathname: '/' } }); });
+afterEach(() => vi.unstubAllGlobals());
+
+describe('stateful demo API', () => {
+  it('registers, restores a token, matches 2+2 once, and returns member-safe group fields', async () => {
+    const { a, group } = await lunch();
+    expect(a.restoreUrl).toBe(`https://lunch.test/#/back?t=${a.accessToken}`); expect(a.accessToken).toMatch(/^[\w-]{43}$/);
+    const me = await mockRequest<MeResponse>('/me', auth); expect(me.groupId).toBe(group); expect(me.waitingReason).toBeNull();
+    const data = await mockRequest<GroupResponse>(`/groups/${group}`, auth);
+    expect(data.members).toHaveLength(4); expect(data.members.filter(p => p.isMe)).toHaveLength(1);
+    expect(data.members[0]).not.toHaveProperty('category'); expect(data.members[0]).not.toHaveProperty('languages'); expect(data.members[0]).not.toHaveProperty('accessToken');
+    expect((await mockRequest<MatchRunResponse>('/admin/match', admin)).groupsCreated).toHaveLength(0);
+  });
+  it('never shows a one-sided YES or NO to the recipient and gates contact sharing', async () => {
+    const { a, b, group } = await lunch(); const path = `/groups/${group}/connections`;
+    await mockRequest(`${path}/${b.me.id}`, { ...auth, method: 'PUT', body: { choice: 'YES' } });
+    setToken(b.accessToken);
+    expect((await mockRequest<ConnectionItem[]>(path, auth)).find(p => p.participantId === a.me.id)).toMatchObject({ status: 'NONE', myChoice: null, theirContact: null });
+    await mockRequest(`${path}/${a.me.id}`, { ...auth, method: 'PUT', body: { choice: 'NO' } });
+    setToken(a.accessToken);
+    expect((await mockRequest<ConnectionItem[]>(path, auth)).find(p => p.participantId === b.me.id)).toMatchObject({ status: 'WAITING_FOR_THEM', theirContact: null });
+    await expect(mockRequest(`${path}/${b.me.id}/contact`, { ...auth, method: 'PUT', body: { contact: 'discord demo' } })).rejects.toMatchObject({ status: 409, code: 'NOT_MUTUAL' });
+  });
+  it('shares only after MUTUAL, withdraws contact, and removes own contact on NO', async () => {
+    const { a, b, group } = await lunch(); const path = `/groups/${group}/connections`;
+    await mockRequest(`${path}/${b.me.id}`, { ...auth, method: 'PUT', body: { choice: 'YES' } });
+    setToken(b.accessToken); await mockRequest(`${path}/${a.me.id}`, { ...auth, method: 'PUT', body: { choice: 'YES' } });
+    setToken(a.accessToken); await mockRequest(`${path}/${b.me.id}/contact`, { ...auth, method: 'PUT', body: { contact: 'discord demo' } });
+    setToken(b.accessToken); expect((await mockRequest<ConnectionItem[]>(path, auth)).find(p => p.participantId === a.me.id)?.theirContact).toBe('discord demo');
+    setToken(a.accessToken); await mockRequest(`${path}/${b.me.id}/contact`, { ...auth, method: 'DELETE' });
+    setToken(b.accessToken); expect((await mockRequest<ConnectionItem[]>(path, auth)).find(p => p.participantId === a.me.id)?.theirContact).toBeNull();
+    setToken(a.accessToken); await mockRequest(`${path}/${b.me.id}/contact`, { ...auth, method: 'PUT', body: { contact: 'discord demo' } });
+    await mockRequest(`${path}/${b.me.id}`, { ...auth, method: 'PUT', body: { choice: 'NO' } });
+    setToken(b.accessToken); expect((await mockRequest<ConnectionItem[]>(path, auth)).find(p => p.participantId === a.me.id)).toMatchObject({ status: 'WAITING_FOR_THEM', theirContact: null });
+  });
+  it('denies non-members and self-connections', async () => {
+    const { group, a } = await lunch();
+    await expect(mockRequest(`/groups/${group}/connections/${a.me.id}`, { ...auth, method: 'PUT', body: { choice: 'YES' } })).rejects.toMatchObject({ status: 400 });
+    const outsider = await signup('Outside'); setToken(outsider.accessToken);
+    await expect(mockRequest(`/groups/${group}`, auth)).rejects.toMatchObject({ status: 403 });
+  });
+  it('deletes a registration, revokes its token and leaves a tombstone', async () => {
+    const { a, b, group } = await lunch(); await mockRequest('/me', { ...auth, method: 'DELETE' });
+    await expect(mockRequest('/me', auth)).rejects.toMatchObject({ status: 401 }); expect(getToken()).toBeNull();
+    setToken(b.accessToken); const data = await mockRequest<GroupResponse>(`/groups/${group}`, auth);
+    expect(data.members.find(p => p.id === a.me.id)).toMatchObject({ displayName: 'Former participant', interests: [] });
+  });
+  it('preserves invitations for future integration: idempotency, preview, incompatibility and unlink', async () => {
+    const a = await signup('Lena'); setToken(a.accessToken);
+    const invite = await mockRequest<InviteResponse>('/me/invite', { ...auth, method: 'POST' });
+    expect(await mockRequest('/me/invite', { ...auth, method: 'POST' })).toEqual(invite);
+    expect(await mockRequest<InvitePreview>(`/invites/${invite.code}`)).toMatchObject({ valid: true, inviterDisplayName: 'Lena' });
+    const b = await signup('Sam', { inviteCode: invite.code, campus: 'SCHWEINFURT' });
+    expect(b.me.friend?.issue?.code).toBe('FRIEND_DIFFERENT_CAMPUS');
+    await expect(signup('Again', { inviteCode: invite.code })).rejects.toMatchObject({ status: 409, code: 'INVITE_USED' });
+    setToken(b.accessToken); await mockRequest('/me/friend/unlink', { ...auth, method: 'POST' });
+    expect((await mockRequest<MeResponse>('/me', auth)).friend).toBeNull();
+    setToken(a.accessToken); expect((await mockRequest<MeResponse>('/me', auth)).friend).toBeNull();
+  });
+  it('does not split an active friend pair to complete a group', async () => {
+    const a = await signup('Lena'); setToken(a.accessToken);
+    const invite = await mockRequest<InviteResponse>('/me/invite', { ...auth, method: 'POST' });
+    await signup('Friend', { inviteCode: invite.code, slotIds: [mockMeta.slots[4].id, mockMeta.slots[5].id] });
+    await signup('One', { category: 'INTERNATIONAL', slotIds: [mockMeta.slots[5].id] });
+    await signup('Two', { category: 'INTERNATIONAL', slotIds: [mockMeta.slots[5].id] });
+    await signup('Other', { slotIds: [mockMeta.slots[5].id] });
+    expect((await mockRequest<MatchRunResponse>('/admin/match', admin)).groupsCreated).toHaveLength(0);
+  });
+  it('seeds idempotently and leaves live-demo slots waiting for two registrations', async () => {
+    const first = await mockRequest<SeedResponse>('/admin/seed', admin);
+    const second = await mockRequest<SeedResponse>('/admin/seed', admin);
+    expect(second).toEqual(first); expect(first.participants).toHaveLength(6);
+    const result = await mockRequest<MatchRunResponse>('/admin/match', admin);
+    expect(result.groupsCreated).toHaveLength(1); expect(result.waiting).toHaveLength(2);
+    await signup('Lena'); await signup('Sam');
+    expect((await mockRequest<MatchRunResponse>('/admin/match', admin)).groupsCreated).toHaveLength(1);
+    expect((await mockRequest<StatsResponse>('/admin/stats', admin)).matched).toBe(8);
+  });
+  it('returns no group when campus, slot or common language is incompatible', async () => {
+    await signup('One'); await signup('Two', { campus: 'SCHWEINFURT' });
+    await signup('Three', { category: 'INTERNATIONAL', languages: ['tr'] }); await signup('Four', { category: 'INTERNATIONAL' });
+    expect((await mockRequest<MatchRunResponse>('/admin/match', admin)).groupsCreated).toHaveLength(0);
+  });
+  it('rejects missing participant and incorrect admin credentials', async () => {
+    await expect(mockRequest('/me', auth)).rejects.toMatchObject({ status: 401 });
+    await expect(mockRequest('/admin/seed', { ...admin, adminKey: 'wrong' })).rejects.toMatchObject({ status: 401 });
+  });
+});
+
+
+it('persists Mensa choice and prevents matching across Mensas', async () => {
+  const selected = { mensaId: 'WUERZBURG_JOSEF_SCHNEIDER', slotIds: ['2026-11-02T11:30'] };
+  const a = await signup('One', selected);
+  await signup('Two', selected);
+  await signup('Three', { ...selected, category: 'INTERNATIONAL', mensaId: 'WUERZBURG_ROENTGENRING' });
+  await signup('Four', { ...selected, category: 'INTERNATIONAL', mensaId: 'WUERZBURG_ROENTGENRING' });
+  expect((await mockRequest<MatchRunResponse>('/admin/match', admin)).groupsCreated).toHaveLength(0);
+  await signup('Five', { ...selected, category: 'INTERNATIONAL' });
+  await signup('Six', { ...selected, category: 'INTERNATIONAL' });
+  const result = await mockRequest<MatchRunResponse>('/admin/match', admin);
+  expect(result.groupsCreated).toHaveLength(1);
+  setToken(a.accessToken);
+  expect((await mockRequest<MeResponse>('/me', auth)).mensaId).toBe(selected.mensaId);
+  const group = await mockRequest<GroupResponse>(`/groups/${result.groupsCreated[0].groupId}`, auth);
+  expect(group.location).toContain('Josef-Schneider-Straße 9');
+});
+it('keeps a friend pair at different Mensas waiting together', async () => {
+  const a = await signup('One', { mensaId: 'WUERZBURG_ROENTGENRING', slotIds: ['2026-11-02T11:30'] });
+  setToken(a.accessToken);
+  const invite = await mockRequest<InviteResponse>('/me/invite', { ...auth, method: 'POST' });
+  const b = await signup('Friend', { inviteCode: invite.code, mensaId: 'WUERZBURG_JOSEF_SCHNEIDER', slotIds: ['2026-11-02T11:30'] });
+  expect(b.me.friend?.issue?.code).toBe('FRIEND_DIFFERENT_MENSA');
+  const result = await mockRequest<MatchRunResponse>('/admin/match', admin);
+  expect(result.groupsCreated).toHaveLength(0);
+  expect(result.waiting.every(p => p.reasonCode === 'FRIEND_DIFFERENT_MENSA')).toBe(true);
+});

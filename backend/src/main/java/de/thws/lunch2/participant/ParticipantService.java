@@ -4,7 +4,7 @@ import de.thws.lunch2.auth.TokenService;
 import de.thws.lunch2.common.ApiException;
 import de.thws.lunch2.common.CatalogService;
 import de.thws.lunch2.common.ErrorResponse;
-import de.thws.lunch2.common.SlotService;
+import de.thws.lunch2.common.MensaService;
 import de.thws.lunch2.domain.MatchStatus;
 import de.thws.lunch2.domain.Participant;
 import de.thws.lunch2.domain.ReasonCode;
@@ -24,19 +24,19 @@ public class ParticipantService {
     private final ParticipantRepository participants;
     private final TokenService tokens;
     private final CatalogService catalogs;
-    private final SlotService slots;
+    private final MensaService mensas;
     private final InviteService invites;
     private final MeService me;
     private final String publicBaseUrl;
 
     @Inject
     public ParticipantService(ParticipantRepository participants, TokenService tokens, CatalogService catalogs,
-                              SlotService slots, InviteService invites, MeService me,
+                              MensaService mensas, InviteService invites, MeService me,
                               @ConfigProperty(name = "lunch2.public-base-url") String publicBaseUrl) {
         this.participants = participants;
         this.tokens = tokens;
         this.catalogs = catalogs;
-        this.slots = slots;
+        this.mensas = mensas;
         this.invites = invites;
         this.me = me;
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
@@ -52,7 +52,8 @@ public class ParticipantService {
         if (request.interests().stream().anyMatch(id -> !catalogs.hasInterest(id))) {
             throw invalidField("interests", "Please choose known interest IDs.");
         }
-        if (request.slotIds().stream().anyMatch(id -> slots.findById(id).isEmpty())) {
+        var mensa = mensas.resolve(request.campus(), request.mensaId());
+        if (request.slotIds().stream().anyMatch(id -> !mensas.allows(mensa, id, request.mensaId() == null))) {
             throw new ApiException(400, "UNKNOWN_SLOT", "Please choose an available lunch slot.",
                     List.of(new ErrorResponse.FieldError("slotIds", "Unknown lunch slot.")));
         }
@@ -63,7 +64,7 @@ public class ParticipantService {
         Instant now = Instant.now();
         Participant participant = new Participant(UUID.randomUUID().toString(), tokens.hash(token), request.displayName(),
                 request.category(), request.campus(), request.languages(), request.interests(), request.slotIds(),
-                request.studyField(), MatchStatus.WAITING, null, ReasonCode.WAITING_FOR_NEXT_ROUND, null, now, now);
+                request.studyField(), MatchStatus.WAITING, null, ReasonCode.WAITING_FOR_NEXT_ROUND, null, now, now, mensa.id());
         participant = invites.attachIfPresent(participant, request.inviteCode());
         participants.save(participant);
         Log.info("Participant registered");

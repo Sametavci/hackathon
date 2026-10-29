@@ -1,6 +1,7 @@
 package de.thws.lunch2.participant;
 
 import de.thws.lunch2.common.ApiException;
+import de.thws.lunch2.common.MensaService;
 import de.thws.lunch2.common.ReasonMessages;
 import de.thws.lunch2.domain.FriendPair;
 import de.thws.lunch2.domain.LunchGroup;
@@ -26,11 +27,12 @@ public class MeService {
     private final ConnectionRepository connections;
     private final GroupRepository groups;
     private final ReasonMessages reasons;
+    private final MensaService mensas;
     private final String publicBaseUrl;
 
     @Inject
     public MeService(ParticipantRepository participants, FriendPairRepository pairs, InviteRepository invites,
-                     ConnectionRepository connections, GroupRepository groups, ReasonMessages reasons,
+                     ConnectionRepository connections, GroupRepository groups, ReasonMessages reasons, MensaService mensas,
                      @ConfigProperty(name = "lunch2.public-base-url") String publicBaseUrl) {
         this.participants = participants;
         this.pairs = pairs;
@@ -38,6 +40,7 @@ public class MeService {
         this.connections = connections;
         this.groups = groups;
         this.reasons = reasons;
+        this.mensas = mensas;
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
     }
 
@@ -54,7 +57,7 @@ public class MeService {
                 participant.matchStatus(), participant.matchStatus() == MatchStatus.WAITING
                 ? reason(participant.waitingReason()) : null,
                 participant.matchStatus() == MatchStatus.MATCHED ? participant.groupId() : null,
-                friend(participant), pendingInvite);
+                friend(participant), pendingInvite, mensas.resolve(participant.campus(), participant.mensaId()).id());
     }
 
     public void delete(String participantId) {
@@ -114,13 +117,13 @@ public class MeService {
         ReasonCode waitingReason = friend.waitingReason();
         if (friend.matchStatus() == MatchStatus.WAITING && waitingReason != null) {
             waitingReason = switch (waitingReason) {
-                case FRIEND_DIFFERENT_CAMPUS, FRIEND_NO_COMMON_SLOT, FRIEND_NO_COMMON_LANGUAGE, INVITER_ALREADY_MATCHED ->
+                case FRIEND_DIFFERENT_CAMPUS, FRIEND_DIFFERENT_MENSA, FRIEND_NO_COMMON_SLOT, FRIEND_NO_COMMON_LANGUAGE, INVITER_ALREADY_MATCHED ->
                         ReasonCode.WAITING_FOR_NEXT_ROUND;
                 default -> waitingReason;
             };
         }
         return new Participant(friend.id(), friend.tokenHash(), friend.displayName(), friend.category(), friend.campus(),
                 friend.languages(), friend.interests(), friend.slotIds(), friend.studyField(), friend.matchStatus(),
-                friend.groupId(), waitingReason, null, friend.createdAt(), friend.consentAt());
+                friend.groupId(), waitingReason, null, friend.createdAt(), friend.consentAt(), friend.mensaId());
     }
 }

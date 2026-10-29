@@ -11,7 +11,7 @@ import java.util.List;
 public record MeResponse(String id, String displayName, Category category, Campus campus,
                          List<String> languages, List<String> interests, List<String> slotIds, String studyField,
                          MatchStatus matchStatus, Reason waitingReason, String groupId, Friend friend,
-                         PendingInvite pendingInvite) {
+                         PendingInvite pendingInvite, String mensaId) {
     public record Reason(ReasonCode code, String message) {}
     public record Friend(String displayName, PairStatus pairStatus, Reason issue) {}
     public record PendingInvite(String code, String url) {}

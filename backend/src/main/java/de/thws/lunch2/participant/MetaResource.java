@@ -1,7 +1,7 @@
 package de.thws.lunch2.participant;
 
 import de.thws.lunch2.common.CatalogService;
-import de.thws.lunch2.common.SlotService;
+import de.thws.lunch2.common.MensaService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -12,17 +12,17 @@ import jakarta.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class MetaResource {
     private final CatalogService catalogs;
-    private final SlotService slots;
+    private final MensaService mensas;
 
     @Inject
-    public MetaResource(CatalogService catalogs, SlotService slots) {
+    public MetaResource(CatalogService catalogs, MensaService mensas) {
         this.catalogs = catalogs;
-        this.slots = slots;
+        this.mensas = mensas;
     }
 
     @GET
     public MetaResponse meta() {
         return new MetaResponse(catalogs.campuses(), catalogs.languages(), catalogs.interests(),
-                catalogs.studyFields(), slots.slots());
+                catalogs.studyFields(), mensas.slots(), mensas.mensas());
     }
 }

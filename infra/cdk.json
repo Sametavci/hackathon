@@ -1,0 +1,6 @@
+{
+  "app": "npx tsx bin/lunch2.ts",
+  "context": {
+    "@aws-cdk/core:checkSecretUsage": true
+  }
+}

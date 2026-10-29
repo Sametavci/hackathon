@@ -24,7 +24,7 @@ Legend: **M** = must-have, **O** = optional. Est. = minutes incl. agent + verifi
 | HACK-203 | Seed dataset + `POST /api/admin/seed` + `scripts/demo.sh` | Dev 2 | 30 | 204 | admin/SeedService, resources/seed/, scripts/ | M |
 | HACK-206 | Card service: fallback first, then Gemini, cache in group | Dev 2 | 40 | 205 | cards/ | M (AI part degradable) |
 | HACK-202 | Matching edge-case test suite | Dev 2 | 35 | 201 | test/matching/ | M |
-| HACK-108 | Single-jar build (SPA in Quarkus) + tunnel demo run; optional Lightsail | Dev 2 | 35 | 101, 301 | scripts/build-all.sh, backend/src/main/docker/, docs/DEMO.md | M (tunnel) / O (AWS) |
+| HACK-108 | AWS deploy run + demo doc (scripts + CDK already exist) | Dev 2 | 20 | 101, 301 | scripts/, infra/, docs/DEMO.md | M |
 | HACK-208 | Admin page (seed/match/reset/stats, demo links) + stats endpoint | Dev 2 | 25 | 302, 204 | pages/AdminPage.tsx, admin/StatsService | O |
 | HACK-301 | Shared UI components (Button, Chip, Card) + brand styling | Dev 3 | 15 | 000 | frontend/src/components/, index.css | M (skeleton ✅ done) |
 | HACK-302 | API client, types.ts, endpoints.ts (all endpoints), mocks, session | Dev 3 | 30 | 301 | frontend/src/api/ | M |
@@ -97,8 +97,9 @@ Step 2 (provider changed to Gemini by user): `GeminiCardGenerator` — JDK HttpC
 **HACK-202 – Edge-case tests**: insufficient participants (3) → no group + reasons; 4D+0I → none, `NOT_ENOUGH_INTERNATIONAL`; 6D+2I → exactly 1 group; incompatible slots; no shared language; friend pair different campus / no common slot; friend pair never split even when splitting would form a group; no participant in two groups across slots; determinism; previously-met penalty changes choice.
 *AC:* ≥10 tests green. *Verify:* `mvn test`.
 
-**HACK-108 – Build & demo run**: `scripts/build-all.sh` = `npm ci && npm run build` → copy `frontend/dist/*` to `backend/src/main/resources/META-INF/resources/` (git-ignored) → `mvn package` → `java -jar target/quarkus-app/quarkus-run.jar`. `docs/DEMO.md`: run tunnel, set `LUNCH2_PUBLIC_BASE_URL` to tunnel URL, print QR. Optional: Dockerfile (Quarkus `Dockerfile.jvm`) → Lightsail container service.
-*AC:* phone on mobile data opens tunnel URL, registers, sees `/me`. *Verify:* real phone.
+**HACK-108 – Build & demo run** *(done at bootstrap: `scripts/build-all.sh`, `scripts/deploy.sh`, `scripts/destroy.sh`, `infra/` CDK stack – one t3.micro + Elastic IP, port 80, secrets in SSM)*
+Remaining: run `./scripts/deploy.sh` once at CP4, scan the QR with a phone on mobile data, write `docs/DEMO.md` (reset → seed → match, QR of `http://<IP>`). After every redeploy reseed the data (instance is replaced). Keep the local `build-all.sh` + `java -jar` run as the fallback.
+*AC:* phone opens `http://<IP>`, registers, sees `/me`. *Verify:* real phone.
 
 **HACK-208 – Admin page (optional)**: key input (kept in sessionStorage), buttons Seed/Match/Reset, result table incl. waiting reasons, demo restore links, stats JSON prettified.
 
@@ -375,3 +376,10 @@ Tickets in order: HACK-304, HACK-307, HACK-308, HACK-208, HACK-108. Wait for HAC
 to be merged; until then build components with props and local fixtures from API_CONTRACT.md samples.
 Use only frontend/src/api/endpoints.ts. Run `npm run build && npm test` before reporting.
 ```
+
+### Registration/Mensa extension — approved user scope (2026-10-29)
+The user authorized a coordinated theme + registration + backend Mensa implementation,
+including additive contract changes in API_CONTRACT §7. This task covers the necessary
+Dev 1 catalog/registration/persistence, Dev 2 match/group integration and Dev 3 UI changes.
+No new dependencies; preserve other developers' existing edits. Unimplemented unrelated
+invite/connect/cards/admin features are not expanded by this task.

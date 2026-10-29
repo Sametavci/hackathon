@@ -1,0 +1,232 @@
+[
+  {
+    "id": "WUERZBURG_JOSEF_SCHNEIDER",
+    "campus": "WUERZBURG",
+    "name": "Mensa Josef-Schneider-Straße",
+    "address": "Josef-Schneider-Straße 9, 97080 Würzburg",
+    "defaultForCampus": false,
+    "hours": [
+      {
+        "dayOfWeek": 1,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 2,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 3,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 4,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 5,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      }
+    ],
+    "sourceUrl": "https://www.swerk-wue.de/wuerzburg/essen-trinken/mensen-speiseplaene/mensa-josef-schneider-strasse-wuerzburg",
+    "verifiedOn": "2026-10-29"
+  },
+  {
+    "id": "WUERZBURG_ROENTGENRING",
+    "campus": "WUERZBURG",
+    "name": "Mensa Röntgenring",
+    "address": "Röntgenring 12, 97070 Würzburg",
+    "defaultForCampus": true,
+    "hours": [
+      {
+        "dayOfWeek": 1,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 2,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 3,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 4,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 5,
+        "opens": "11:30",
+        "lunchStart": "11:30",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      }
+    ],
+    "sourceUrl": "https://www.swerk-wue.de/wuerzburg/essen-trinken/mensen-speiseplaene/mensa-roentgenring-wuerzburg",
+    "verifiedOn": "2026-10-29"
+  },
+  {
+    "id": "WUERZBURG_STUDENTENHAUS",
+    "campus": "WUERZBURG",
+    "name": "Mensa am Studentenhaus",
+    "address": "Am Studentenhaus, 97072 Würzburg",
+    "defaultForCampus": false,
+    "hours": [
+      {
+        "dayOfWeek": 1,
+        "opens": "11:15",
+        "lunchStart": "11:15",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 2,
+        "opens": "11:15",
+        "lunchStart": "11:15",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 3,
+        "opens": "11:15",
+        "lunchStart": "11:15",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 4,
+        "opens": "11:15",
+        "lunchStart": "11:15",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 5,
+        "opens": "11:15",
+        "lunchStart": "11:15",
+        "foodUntil": "14:00",
+        "closes": "14:30"
+      }
+    ],
+    "sourceUrl": "https://www.swerk-wue.de/wuerzburg/essen-trinken/mensen-speiseplaene/mensa-am-studentenhaus-wuerzburg",
+    "verifiedOn": "2026-10-29"
+  },
+  {
+    "id": "WUERZBURG_HUBLAND_SUED",
+    "campus": "WUERZBURG",
+    "name": "Mensa Campus Hubland Süd",
+    "address": "Am Hubland, 97074 Würzburg",
+    "defaultForCampus": false,
+    "hours": [
+      {
+        "dayOfWeek": 1,
+        "opens": "11:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 2,
+        "opens": "11:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 3,
+        "opens": "11:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 4,
+        "opens": "11:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      },
+      {
+        "dayOfWeek": 5,
+        "opens": "11:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:15",
+        "closes": "14:45"
+      }
+    ],
+    "sourceUrl": "https://www.swerk-wue.de/wuerzburg/essen-trinken/mensen-speiseplaene/mensa-campus-hubland-sued",
+    "verifiedOn": "2026-10-29"
+  },
+  {
+    "id": "SCHWEINFURT_THWS",
+    "campus": "SCHWEINFURT",
+    "name": "Mensa THWS Campus Schweinfurt",
+    "address": "Fritz-Drescher-Straße 1, 97421 Schweinfurt",
+    "defaultForCampus": true,
+    "hours": [
+      {
+        "dayOfWeek": 1,
+        "opens": "08:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:00",
+        "closes": "14:30"
+      },
+      {
+        "dayOfWeek": 2,
+        "opens": "08:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:00",
+        "closes": "14:30"
+      },
+      {
+        "dayOfWeek": 3,
+        "opens": "08:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:00",
+        "closes": "14:30"
+      },
+      {
+        "dayOfWeek": 4,
+        "opens": "08:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:00",
+        "closes": "14:30"
+      },
+      {
+        "dayOfWeek": 5,
+        "opens": "08:00",
+        "lunchStart": "11:00",
+        "foodUntil": "14:00",
+        "closes": "14:00"
+      }
+    ],
+    "sourceUrl": "https://www.swerk-wue.de/schweinfurt/essen-trinken/mensen-speiseplaene/mensa-thws-campus-schweinfurt",
+    "verifiedOn": "2026-10-29"
+  }
+]

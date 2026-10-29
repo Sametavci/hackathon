@@ -28,7 +28,7 @@
 | Backend | Java 21, Quarkus 3 (LTS), `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-validator`, `quarkus-junit`, `rest-assured` | Microservices / Lambda – cold starts, more infra |
 | Persistence | In-memory maps + **JSON snapshot file** behind repository interfaces | DynamoDB (IAM/infra time), JPA+SQLite (dialect friction, `@ElementCollection` for lists) |
 | AI | Gemini API via JDK `java.net.http.HttpClient` (no new dependency), `gemini-3.8-flash` | LLM in matching – non-deterministic |
-| Hosting | One Quarkus jar serving API **and** built SPA from `META-INF/resources` → same origin, no CORS. Demo: laptop + `cloudflared tunnel --url http://localhost:8080` (HTTPS). Optional: Docker image on AWS Lightsail Containers (eu-central-1, HTTPS endpoint included). | Amplify + API Gateway + Lambda – 3 services to configure |
+| Hosting | One Quarkus jar serving API **and** built SPA from `META-INF/resources` → same origin, no CORS. AWS: CDK stack in `infra/` = one free-tier t3.micro EC2 + Elastic IP in a public-subnet-only VPC, port 80, secrets in SSM Parameter Store, deployed with `scripts/deploy.sh`. Fallback: laptop + tunnel. | Amplify + API Gateway + Lambda / ALB / RDS – more services and idle cost |
 
 ### C.2 Modules & ownership
 ```
@@ -101,3 +101,12 @@ Dependency direction: `resource → service → persistence/domain`. `matching` 
 | Connect "no" could leak via status | `WAITING_FOR_THEM` for both "no" and "no answer"; incoming requests hidden. |
 | Integrated MVP at 3:30 vs Connect UI at 4:00 | Accepted honestly: core MVP (register→invite→match→reveal→cards) at CP4 3:30, Connect complete by 4:00 (its API is test-verified by 3:25). |
 | Dev 2 is the heaviest queue | Fallbacks pre-agreed (simplified engine, 108 → Dev 1). |
+
+### Mensa-aware registration extension (2026-10-29)
+The approved scope adds a nine-step registration wizard and a shared static Mensa catalog
+(`backend/src/main/resources/catalog/mensas.json`, imported by frontend mocks). See API_CONTRACT §7.
+MensaService extends the incoming CatalogService/SlotService APIs with five weekdays and per-Mensa 45-minute availability. ParticipantService
+validates campus/Mensa/slots and persists `mensaId`; missing legacy values resolve to campus defaults.
+MatchService checks friend compatibility before partitioning candidates by Mensa, then invokes the
+unchanged pure MatchingEngine per partition and validates every proposal before saving groups.
+Existing group location strings remain intact; new groups store the catalog name and address.
