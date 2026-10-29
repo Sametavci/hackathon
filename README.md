@@ -6,7 +6,7 @@ AI conversation cards and mutual, opt-in contact sharing. Prototype – uses fic
 
 ## Prerequisites
 - JDK 21 (`java -version`), Node.js ≥ 20 (`node -v`). Maven is optional – the backend ships `./mvnw`.
-- Optional: `ANTHROPIC_API_KEY` for AI conversation cards (without it the app uses built-in fallback cards).
+- Optional: `GEMINI_API_KEY` for AI conversation cards (without it the app uses built-in fallback cards).
 
 ## Install
 ```
@@ -21,7 +21,8 @@ Backend keys and env vars are listed in `docs/API_CONTRACT.md` §5 (all have loc
 | `LUNCH2_ADMIN_KEY` | `dev-admin-key` | header `X-Admin-Key` for seed/match/reset |
 | `LUNCH2_DATA_FILE` | `./data/lunch2.json` | JSON persistence file |
 | `LUNCH2_PUBLIC_BASE_URL` | `http://localhost:5173` | base for invite/restore links |
-| `ANTHROPIC_API_KEY` | *(empty)* | enables AI cards |
+| `GEMINI_API_KEY` | *(empty)* | enables Gemini AI cards |
+| `LUNCH2_AI_MODEL` | `gemini-3.8-flash` | Gemini model for cards |
 Frontend: `frontend/.env.development` → `VITE_USE_MOCKS=true` serves mock data; put `VITE_USE_MOCKS=false` in `frontend/.env.development.local` to use the real backend.
 
 ## Run locally

@@ -7,7 +7,7 @@ same campus, shared slot, shared language). Members see a group reveal, AI conve
 to mutual contact sharing.
 - **MVP goal:** one reliable end-to-end demo: register → invite friend → match 2+2 → reveal → cards → mutual connect.
 - **Non-goals:** chat, notifications, SSO/passwords, admin dashboard beyond 3 buttons, DynamoDB/Lambda, profile editing, German UI.
-- **Stack:** Java 21 + Quarkus 3.40 (REST, Jackson, Hibernate Validator) · React 18 + TypeScript + Vite 5 + Tailwind 3 · JSON-file persistence · Anthropic API for cards.
+- **Stack:** Java 21 + Quarkus 3.40 (REST, Jackson, Hibernate Validator) · React 18 + TypeScript + Vite 5 + Tailwind 3 · JSON-file persistence · Gemini API for cards.
 
 Docs (read the relevant part **before** coding): `docs/SPEC.md` (what/acceptance), `docs/ARCHITECTURE.md`
 (modules, ownership, matching algorithm), `docs/API_CONTRACT.md` (endpoints, DTOs, interfaces, config – **frozen**),

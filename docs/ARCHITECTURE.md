@@ -8,7 +8,7 @@
 |---|---|---|
 | A1 | **Team = 3 developers.** The brief says "exactly 3" in Context/Constraints and uses owners "Developer 1, 2, 3", but "four" in several later sections. The plan is built for 3; **TASKS.md §F.4 gives a drop-in split if a 4th developer joins.** | Contradiction in brief; 3 is the stricter case. |
 | A2 | Every laptop has JDK 21, Maven 3.9+, Node 20+, Git, and an AI coding agent. Checked at 0:00–0:10. | Environment failures are a top risk. |
-| A3 | One Anthropic API key is available (Claude, model `claude-haiku-5-5` for low cost). If not → fallback cards only; no plan change. | AI is behind an interface. |
+| A3 | A Gemini API key may be configured (`gemini-3.8-flash` by default). If not → fallback cards only; no plan change. | AI is behind an interface. |
 | A4 | AWS access is uncertain. Cloud deploy is **optional**; the guaranteed demo path is laptop + HTTPS tunnel (cloudflared quick tunnel) so phones can scan a QR code. | MVP must run locally. |
 | A5 | "Domestic/international" is self-declared ("I've lived in Germany for a while" / "I'm new to Germany"), not nationality or ethnicity. | GDPR data minimisation, avoids Art. 9-adjacent data. |
 | A6 | One matching round = each participant can be in at most one active group. This trivially guarantees "no overlapping assignments". | Simplest correct rule. |
@@ -27,7 +27,7 @@
 | Frontend | React 18 + TS + Vite + Tailwind, `react-router-dom` (HashRouter), `qrcode.react`, Vitest | Next.js – needless SSR |
 | Backend | Java 21, Quarkus 3 (LTS), `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-validator`, `quarkus-junit`, `rest-assured` | Microservices / Lambda – cold starts, more infra |
 | Persistence | In-memory maps + **JSON snapshot file** behind repository interfaces | DynamoDB (IAM/infra time), JPA+SQLite (dialect friction, `@ElementCollection` for lists) |
-| AI | Anthropic Messages API via JDK `java.net.http.HttpClient` (no new dependency), `claude-haiku-5-5` | LLM in matching – non-deterministic |
+| AI | Gemini API via JDK `java.net.http.HttpClient` (no new dependency), `gemini-3.8-flash` | LLM in matching – non-deterministic |
 | Hosting | One Quarkus jar serving API **and** built SPA from `META-INF/resources` → same origin, no CORS. AWS: CDK stack in `infra/` = one free-tier t3.micro EC2 + Elastic IP in a public-subnet-only VPC, port 80, secrets in SSM Parameter Store, deployed with `scripts/deploy.sh`. Fallback: laptop + tunnel. | Amplify + API Gateway + Lambda / ALB / RDS – more services and idle cost |
 
 ### C.2 Modules & ownership
@@ -49,7 +49,7 @@ lunch2/
 │     ├─ connect/     ConnectionResource, ConnectionService, DTOs                  ── Dev 1
 │     ├─ matching/    MatchCandidate, MatchingEngine, GroupValidator, MatchService ── Dev 2
 │     ├─ group/       GroupResource, GroupService, DTOs                            ── Dev 2
-│     ├─ cards/       CardsResource, CardService, ClaudeCardGenerator, FallbackCards ── Dev 2
+│     ├─ cards/       CardsResource, CardService, GeminiCardGenerator, FallbackCards ── Dev 2
 │     └─ admin/       AdminResource, SeedService, StatsService; resources/seed/demo-participants.json ── Dev 2
 └─ frontend/
    ├─ package.json, vite.config.ts, tailwind config                ── Dev 3
@@ -83,7 +83,7 @@ Why not optimal (ILP/max-flow)? Greedy-with-validation is explainable, determini
 Phone (React SPA, HashRouter) ──fetch /api/*──▶ Quarkus resource ──▶ service ──▶ repository interface ──▶ JsonFileStore (in-memory maps + data/lunch2.json)
                                                     │
                        MatchService ──maps to MatchCandidate──▶ MatchingEngine (pure Java) ──▶ GroupValidator ──▶ LunchGroup saved
-                       CardService ──interest IDs + language only──▶ Claude API (8 s timeout) ──fallback──▶ FallbackCards ──▶ cached in LunchGroup
+                       CardService ──interest labels + language only──▶ Gemini API (8 s timeout) ──fallback──▶ FallbackCards ──▶ cached in LunchGroup
 ```
 
 Dependency direction: `resource → service → persistence/domain`. `matching` engine depends on nothing but its own records. Dev 2 modules may inject Dev 1's repositories, `CurrentParticipant`, `CatalogService`, `ApiException`; Dev 1 modules never import `matching`, `group`, `cards`, `admin`.

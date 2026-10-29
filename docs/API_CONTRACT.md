@@ -289,6 +289,14 @@ Missing or invalid admin keys return 401 `UNAUTHORIZED` using the standard error
 
 ### A4 `GET /api/admin/stats` → 200 (optional)
 
+Requires `X-Admin-Key`. Returns aggregate counts only, without names, IDs, tokens or contacts.
+`registrations` and `byCampus` count current participant records and always include all enum keys, even at zero.
+`matched`/`waiting` count current participant statuses. `matchRate` is matched/registrations, rounded to two
+decimal places (0 for an empty store). `groups` counts saved groups; `friendPairs` counts ACTIVE pairs.
+`mutualConnections` counts each unordered pair once per group when both current members chose YES;
+sharing contact details is not required. Unlinked friend pairs, deleted participants and one-sided/NO
+connection choices do not contribute to the respective counts.
+
 ```json
 { "registrations": { "DOMESTIC": 9, "INTERNATIONAL": 8 }, "byCampus": { "WUERZBURG": 11, "SCHWEINFURT": 6 },
   "matched": 12, "waiting": 5, "matchRate": 0.71, "groups": 3, "friendPairs": 3, "mutualConnections": 2 }
@@ -358,10 +366,17 @@ final class GroupValidator { static List<String> violations(ProposedGroup g, Map
 
 ```java
 interface ConversationCardGenerator { List<String> generate(List<String> interestIds, String languageCode) throws Exception; }
-class ClaudeCardGenerator implements ConversationCardGenerator   // only if lunch2.ai.api-key set
+class GeminiCardGenerator implements ConversationCardGenerator   // only if lunch2.ai.api-key set
 class FallbackCards { static List<Card> pick(String groupId, List<String> interestIds, String lang); } // deterministic
 ```
-AI payload contains **only** interest IDs and a language code — no names, IDs, campus or times.
+The generator accepts catalog interest IDs internally; the Gemini payload contains **only** their labels
+and a language code as group-specific data — no names, participant/group IDs, campus or times.
+Gemini uses `POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`,
+the `x-goog-api-key` header, and JDK HttpClient. No new SDK dependency is required.
+Requests have an overall timeout capped at 8 seconds. Missing keys, errors, incomplete output or invalid questions
+use the deterministic fallback and are cached. Accept 3–6 distinct nonblank strings of at most 140 characters;
+truncate six to five or supplement three/four with fallback questions to preserve E9's five-card response.
+`source: AI` means the set contains validated generated questions, possibly supplemented with fallback questions.
 
 ---
 
@@ -376,8 +391,8 @@ AI payload contains **only** interest IDs and a language code — no names, IDs,
 | `lunch2.event-start-date` | `LUNCH2_EVENT_START_DATE` | `2026-11-02` | slots |
 | `lunch2.slot-times` | – | `11:30,12:15,13:00` | slots |
 | `lunch2.location.wuerzburg` / `.schweinfurt` | – | see §2 | groups |
-| `lunch2.ai.api-key` | `ANTHROPIC_API_KEY` | *(empty → fallback only)* | Dev 2 |
-| `lunch2.ai.model` | `LUNCH2_AI_MODEL` | `claude-haiku-5-5` | Dev 2 |
+| `lunch2.ai.api-key` | `GEMINI_API_KEY` | *(empty → fallback only)* | Dev 2 |
+| `lunch2.ai.model` | `LUNCH2_AI_MODEL` | `gemini-3.8-flash` | Dev 2 |
 | `lunch2.ai.timeout-ms` | – | `8000` | Dev 2 |
 
 Frontend env (`frontend/.env.development`): `VITE_USE_MOCKS=true|false` (default `true` until CP2).
