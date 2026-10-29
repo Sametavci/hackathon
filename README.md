@@ -25,6 +25,20 @@ Backend keys and env vars are listed in `docs/API_CONTRACT.md` §5 (all have loc
 | `LUNCH2_AI_MODEL` | `gemini-3.8-flash` | Gemini model for cards |
 Frontend: `frontend/.env.development` → `VITE_USE_MOCKS=true` serves mock data; put `VITE_USE_MOCKS=false` in `frontend/.env.development.local` to use the real backend.
 
+### Local admin key
+
+Copy `backend/.env.example` to `backend/.env` (do not overwrite an existing local file).
+Generate your private admin key with `openssl rand -hex 32` and replace the example `LUNCH2_ADMIN_KEY`
+value in `backend/.env`. Start Quarkus from `backend/` so it reads that directory's `.env` file.
+An already-exported shell variable takes precedence over `.env`; restart the backend after changing the key.
+Open `/#/admin` and enter exactly the same key. The UI keeps it in sessionStorage and sends it as
+`X-Admin-Key`; never put it in a `VITE_` variable or a URL. Missing/incorrect keys return 401.
+Local `.env` files are git-ignored; only the example should be committed.
+
+This custom key applies to the real backend (`VITE_USE_MOCKS=false`). Frontend mock mode uses the
+fixed fictional key `dev-admin-key`. Shell scripts such as `demo.sh` do not automatically load
+`backend/.env`; export the same `LUNCH2_ADMIN_KEY` in the shell before running them.
+
 ## Run locally
 ```
 cd backend && ./mvnw quarkus:dev        # API on http://localhost:8080
